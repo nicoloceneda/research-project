@@ -1,21 +1,33 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
-# Generate Distribution:
-random_num = np.random.normal(loc=0, scale=3, size=100000)
-random_int = np.round(random_num)
+
 
 # Plot:
-axis = np.arange(start=min(random_int), stop=max(random_int)+1)
+axis = np.arange(start=min(f), stop=max(f)+1)
 d_pi = 0
-plt.hist(random_int, bins=axis)
+plt.hist(f, bins=axis)
 
 f =
 delta = 0.9
 p = 0.5
 K = 0.7
 sigma_D = 1
-theta = np.arange(-4000, 7000, 1000)
+
+# Parameters
+
+theta = np.arange(-0.01, 0.01, 0.001)
+
+random_int = np.random.randint(low=1, high=10, size=20)
+f = random_int / np.sum(random_int)
+
+
+
+
+range = pd.cut(random_num, np.arange(len(theta)))
+
+df.groupby('range')['value'].count().reset_index(name='Count').to_dict(orient='records')
 
 def kappa
 
