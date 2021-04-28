@@ -3,42 +3,30 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-
-# Plot:
-axis = np.arange(start=min(f), stop=max(f)+1)
-d_pi = 0
-plt.hist(f, bins=axis)
-
-f =
-delta = 0.9
-p = 0.5
-K = 0.7
-sigma_D = 1
-
 # Parameters
 
-theta = np.arange(-0.01, 0.01, 0.001)
+n = 10
+f = np.ones(n) / (n * (n+1) / 2) * np.arange(1,n+1)
+delta = 0.02
+gamma = np.arange(1, 3, 0.5)
+p = 0.5
+sigmaD_2 = 0.02
+theta = np.linspace(-0.0045, 0.006, n)
 
-random_int = np.random.randint(low=1, high=10, size=20)
-f = random_int / np.sum(random_int)
+def K(gamma_f):
+    k = 0
+    for i in range(n):
+        k += f[i] / (delta + p + (gamma_f-1) * theta[i] + 0.5 * gamma_f * (1-gamma_f) * sigmaD_2)
+    return k
 
-
-
-
-range = pd.cut(random_num, np.arange(len(theta)))
-
-df.groupby('range')['value'].count().reset_index(name='Count').to_dict(orient='records')
-
-def kappa
-
-    k =
-def c_theta(x):
-
-
-    c = 1 / ((delta + p + (theta - 1) * x + 0.5 * x * (1 - x) * sigma_D ** 2) * (1 - p * K))
-
+def C(gamma_f):
+    c = 1 / ((delta + p + (gamma_f-1) * theta + 0.5 * gamma_f * (1-gamma_f) * sigmaD_2) * (1 - p * K(gamma_f)))
     return c
 
-for gamma in np.arange(1,3,0.5):
+C_theta = {}
+for gamma_f in gamma:
 
-    plt.plot(c_theta(gamma))
+    C_theta[gamma_f] = list(C(gamma_f))
+
+C_theta = pd.DataFrame(C_theta)
+plt.plot(C_theta)
