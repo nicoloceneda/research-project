@@ -5,12 +5,12 @@ import matplotlib.pyplot as plt
 
 # Parameters
 
-n = 10
-f = np.ones(n) / (n * (n+1) / 2) * np.arange(1,n+1)
+n = 100
+f = np.ones(n) / n # (n * (n+1) / 2) * np.arange(1,n+1)
 delta = 0.02
 gamma = np.arange(1, 3, 0.5)
-p = 0.5
-sigmaD_2 = 0.02
+p = 0.01
+sigmaD_2 = 0.015
 theta = np.linspace(-0.0045, 0.006, n)
 
 def K(gamma_f):
@@ -24,9 +24,13 @@ def C(gamma_f):
     return c
 
 C_theta = {}
-for gamma_f in gamma:
+for g in gamma:
 
-    C_theta[gamma_f] = list(C(gamma_f))
+    C_theta[g] = list(C(g))
 
 C_theta = pd.DataFrame(C_theta)
-plt.plot(C_theta)
+
+C_theta.plot(kind='line')
+plt.legend(loc='upper right')
+
+
