@@ -1,0 +1,523 @@
+(************** Content-type: application/mathematica **************
+                     CreatedBy='Mathematica 5.0'
+
+                    Mathematica-Compatible Notebook
+
+This notebook can be used with any Mathematica-compatible
+application, such as Mathematica, MathReader or Publicon. The data
+for the notebook starts with the line containing stars above.
+
+To get the notebook into a Mathematica-compatible application, do
+one of the following:
+
+* Save the data starting with the line of stars above into a file
+  with a name ending in .nb, then open the file inside the
+  application;
+
+* Copy the data starting with the line of stars above to the
+  clipboard, then use the Paste menu command inside the application.
+
+Data for notebooks contains only printable 7-bit ASCII and can be
+sent directly in email or through ftp in text mode.  Newlines can be
+CR, LF or CRLF (Unix, Macintosh or MS-DOS style).
+
+NOTE: If you modify the data for this notebook not in a Mathematica-
+compatible application, you must delete the line below containing
+the word CacheID, otherwise Mathematica-compatible applications may
+try to use invalid cache data.
+
+For more information on notebooks and Mathematica-compatible 
+applications, contact Wolfram Research:
+  web: http://www.wolfram.com
+  email: info@wolfram.com
+  phone: +1-217-398-0700 (U.S.)
+
+Notebook reader applications are available free of charge from 
+Wolfram Research.
+*******************************************************************)
+
+(*CacheID: 232*)
+
+
+(*NotebookFileLineBreakTest
+NotebookFileLineBreakTest*)
+(*NotebookOptionsPosition[     14809,        442]*)
+(*NotebookOutlinePosition[     15453,        464]*)
+(*  CellTagsIndexPosition[     15409,        460]*)
+(*WindowFrame->Normal*)
+
+
+
+Notebook[{
+Cell[BoxData[
+    RowBox[{\(Copyright\ \[Copyright]\ 2003\ S . Boragan\ Aruoba\), ",", 
+      RowBox[{
+        RowBox[{\(Jesus\ Fernandez\), 
+          "-", \(Villaverde\ and\ Juan\ F . Rubio\), "-", 
+          RowBox[{
+            RowBox[{
+            "Ramirez", ".", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+              StyleBox["These",
+                "Text"]}], 
+            StyleBox[" ",
+              "Text"], 
+            StyleBox["codes",
+              "Text"], 
+            StyleBox[" ",
+              "Text"], 
+            StyleBox["are",
+              "Text"], 
+            StyleBox[" ",
+              "Text"], 
+            StyleBox["available",
+              "Text"], 
+            StyleBox[" ",
+              "Text"], 
+            StyleBox["on",
+              "Text"], 
+            StyleBox[" ",
+              "Text"], 
+            StyleBox["the",
+              "Text"], 
+            StyleBox[" ",
+              "Text"], 
+            StyleBox["World",
+              "Text"], 
+            StyleBox[" ",
+              "Text"], 
+            StyleBox["Wide",
+              "Text"], 
+            StyleBox[" ",
+              "Text"], 
+            StyleBox["Web",
+              "Text"], 
+            StyleBox[" ",
+              "Text"], 
+            StyleBox["at",
+              "Text"], 
+            StyleBox["  ",
+              "Text"], 
+            StyleBox[\(\(http\)\(:\)\),
+              "Text"]}]}], 
+        StyleBox["//",
+          "Text"], 
+        StyleBox[\(www . econ . upenn . edu/\(\(~\)\(jesusfv\)\)\),
+          "Text"]}], 
+      StyleBox[",",
+        "Text"], 
+      StyleBox[\(\(\(\(http\)\(:\)\) // 
+            www . econ . upenn . 
+                  edu/\(\(~\)\(aruoba\)\)\ \ and\ \(\(http\)\(:\)\)\) // 
+          www . econ . umn . 
+                edu/\(\(~\)\(rubio\)\)\ and\ they\ are\ part\ of\ the\ \
+package\ prepared\ for\ the\ paper\ "\<Comparing Solution Methods for Dynamic \
+Equilibrium Economies\>" . \ 
+              They\ may\ be\ freely\ reproduced\ for\ educational\ and\ \
+research\ purposes\ so\ long\ as\ they\ are\ not\ altered\),
+        "Text"], 
+      StyleBox[",",
+        "Text"], 
+      StyleBox[\(this\ copyright\ notice\ is\ reproduced\ with\ them\),
+        "Text"], 
+      StyleBox[",",
+        "Text"], 
+      StyleBox[" ",
+        "Text"], 
+      StyleBox[\(and\ they\ are\ not\ sold\ for\ \ profit . \
+\[IndentingNewLine]Consent\ of\ the\ corresponding\ author\ must\ be\ \
+obtained\ before\ using\ all\ or\ any\ part\ of\ these\ codes\ in\ a\ \
+\(\(publication\)\(.\)\)\),
+        "Text"]}]], "Input",
+  TextAlignment->Center,
+  TextJustification->1,
+  FontColor->RGBColor[0, 0, 1]],
+
+Cell[CellGroupData[{
+
+Cell["Setup", "Section"],
+
+Cell[BoxData[{
+    \(Off[General::spell]\), "\[IndentingNewLine]", 
+    \(Off[General::spell1]\)}], "Input"],
+
+Cell[BoxData[
+    \(Needs["\<Statistics`NormalDistribution`\>"]\)], "Input"],
+
+Cell[BoxData[
+    \(makeseries[f_Symbol, \ x_List, \ x0_List, \ 
+        order_Integer] := \[IndentingNewLine]Normal@
+          Series[f @@ x, 
+            Sequence @@ 
+              Thread[{x, x0, order}]] /. \(\(Derivative[
+                n__ /; Plus[n] > orderexpansion]\)[_]\)[__] \[RuleDelayed] \ 
+          0\)], "Input"],
+
+Cell[BoxData[
+    \(partials[expr_, \ vars_List, order_Integer] := 
+      Flatten /@ NestList[
+          MapThread[
+              D, \ {NestList[Rest, \ #, \ Length[vars] - 1], vars}] &, \(D[
+                expr, #] &\) /@ vars, order - 1]\)], "Input"],
+
+Cell[BoxData[
+    \(\(myvariables = {k, z, \[Sigma]};\)\)], "Input"]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Model Definition", "Section"],
+
+Cell[BoxData[{
+    \(\(utility\  = \ \((\(c\^\[Theta]\) \((1 - l)\)\^\(1 - \
+\[Theta]\))\)\^\(1 - \[Tau]\)/\((1 - \[Tau])\);\)\), "\[IndentingNewLine]", 
+    \(\(uc\  = \ D[utility, c];\)\), "\[IndentingNewLine]", 
+    \(\(ucp\  = \ 
+        D[utility, c] /. {c \[Rule] cp, 
+            l \[Rule] lp};\)\), "\[IndentingNewLine]", 
+    \(\(ul = D[utility, l];\)\), "\[IndentingNewLine]", 
+    \(\(f1 = 
+        uc - \[Beta]*
+            ucp*\((1 + \[Alpha]*\[ExponentialE]\^zp*\(kp\^\((\[Alpha] - 
+                          1)\)\) 
+                  lp\^\((1 - \[Alpha])\) - \[Delta])\);\)\), "\n", 
+    \(\(f2 = \(-\(ul\/uc\)\) - \((1 - \[Alpha])\)*\[ExponentialE]\^z*
+            k\^\[Alpha]*l\^\(-\[Alpha]\);\)\), "\n", 
+    \(\(\(f3 = 
+        c + kp - \((1 - \[Delta])\)*k - \[ExponentialE]\^z*\(k\^\[Alpha]\) 
+            l\^\((1 - \[Alpha])\);\)\(\[IndentingNewLine]\)
+    \)\), "\[IndentingNewLine]", 
+    \(\(c = g1[k, z, \[Sigma]];\)\), "\[IndentingNewLine]", 
+    \(\(l = g2[k, z, \[Sigma]];\)\), "\[IndentingNewLine]", 
+    \(\(kp = h[k, z, \[Sigma]];\)\), "\[IndentingNewLine]", 
+    \(\(zp = \[Rho]*z + \[Sigma]*\[Epsilon];\)\), "\[IndentingNewLine]", 
+    \(\(cp = g1[kp, zp, \[Sigma]];\)\), "\[IndentingNewLine]", 
+    \(\(lp = g2[kp, zp, \[Sigma]];\)\), "\[IndentingNewLine]", 
+    \(\(F = {f1, f2, f3};\)\)}], "Input"]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Calibration and Steady-State Calculation", "Section"],
+
+Cell[BoxData[{
+    \(\(parmrule = {\[Alpha] \[Rule] \ 0.4, \[Beta] \[Rule] 
+            0.9896, \[Delta] \[Rule] \ 0.0196, \[Rho] \[Rule] \ 
+            0.95, \[Tau] \[Rule] 2, \[Theta] \[Rule] 
+            0.357};\)\[IndentingNewLine]\), "\[IndentingNewLine]", 
+    \(\(\[Phi] = \((1/\[Alpha]*\((1/\[Beta] - 
+                    1 + \[Delta])\))\)^\((1/\((1 - \[Alpha])\))\) /. 
+          parmrule;\)\), "\n", 
+    \(\(\[CapitalOmega] = \((\[Phi]^\((1 - \[Alpha])\) - \[Delta])\) /. 
+          parmrule;\)\), "\n", 
+    \(\(myphi = \[Theta]/\((1 - \[Theta])\)*\((1 - \[Alpha])\)*\[Phi]^\((\(-\
+\[Alpha]\))\) /. parmrule;\)\[IndentingNewLine]\), "\n", 
+    \(\(ks = myphi/\((\[CapitalOmega] + \[Phi]*myphi)\);\)\), "\n", 
+    \(\(cs = \[CapitalOmega]*ks;\)\), "\[IndentingNewLine]", 
+    \(\(ls = \[Phi]*ks;\)\[IndentingNewLine]\), "\[IndentingNewLine]", 
+    \(\(varrule = {k \[Rule] \ ks, 
+          z \[Rule] 0, \[Sigma] \[Rule] 0};\)\), "\n", 
+    \(\(ssfunrule = {h[__] \[Rule] \ k, \ g1[__] \[Rule] \ cs, 
+          g2[__] \[Rule] ls};\)\), "\n", 
+    \(\(derivrule = 
+        d : \(\(Derivative[__]\)[_]\)[__] \[RuleDelayed] \ \ \
+d[\([0]\)];\)\)}], "Input"],
+
+Cell[BoxData[
+    \(\(unirule = \(Join[{derivrule}, \((\(ssfunrule /. varrule\) /. 
+                  parmrule\ )\), \((varrule /. parmrule)\)] // N\) // 
+          Chop;\)\)], "Input"]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Main engine", "Section"],
+
+Cell[CellGroupData[{
+
+Cell["Order of Expansion", "Subsection"],
+
+Cell[BoxData[
+    \(\(orderexpansion = 2;\)\)], "Input"]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Solution Algorithm", "Subsection"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+    \(\(epsrule = 
+        Append[Reverse@
+            Thread[\[Epsilon]\^Range[2, orderexpansion, 2] -> 
+                Table[ExpectedValue[#\^i &, NormalDistribution[0, 1]], {i, 2, 
+                    orderexpansion, 2}]], \[Epsilon] \[Rule] 
+            0];\)\), "\[IndentingNewLine]", 
+    \(\(dF = 
+        Expand[partials[F /. parmrule // N, myvariables, orderexpansion] /. 
+                unirule] /. epsrule // Chop;\)\), "\n", 
+    \(\(soln = 
+          Fold[\[IndentingNewLine]Join[#1, 
+                  First@NSolve[Thread[#2 \[Equal] 0] /. #1]] &, \ 
+              First@Select[
+                  NSolve[Thread[
+                      First[dF] \[Equal] 
+                        0]], \[IndentingNewLine]\(Derivative[1, 0, 0]\)[h] < 
+                        1 /. # &], \ \[IndentingNewLine]Rest[dF]] // Chop;\) // 
+      Timing\)}], "Input"],
+
+Cell[BoxData[
+    \({0.04700000000000015`\ Second, Null}\)], "Output"]
+}, Open  ]]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Solution", "Subsection"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(soln\)], "Input"],
+
+Cell[BoxData[
+    RowBox[{"{", 
+      RowBox[{
+        RowBox[{
+          SuperscriptBox["g1", 
+            TagBox[\((0, 0, 1)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "0"}], ",", 
+        RowBox[{
+          SuperscriptBox["g2", 
+            TagBox[\((0, 0, 1)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "0"}], ",", 
+        RowBox[{
+          SuperscriptBox["h", 
+            TagBox[\((0, 0, 1)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "0"}], ",", 
+        RowBox[{
+          SuperscriptBox["g1", 
+            TagBox[\((0, 1, 0)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "0.7779921652219364`"}], ",",
+         
+        RowBox[{
+          SuperscriptBox["g2", 
+            TagBox[\((0, 1, 0)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "0.14464932536341507`"}], 
+        ",", 
+        RowBox[{
+          SuperscriptBox["h", 
+            TagBox[\((0, 1, 0)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "1.4507201100715288`"}], ",",
+         
+        RowBox[{
+          SuperscriptBox["g1", 
+            TagBox[\((1, 0, 0)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "0.021776707832118734`"}], 
+        ",", 
+        RowBox[{
+          SuperscriptBox["g2", 
+            TagBox[\((1, 0, 0)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "0.00013961977990858583`"}], 
+        ",", 
+        RowBox[{
+          SuperscriptBox["h", 
+            TagBox[\((1, 0, 0)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "0.9892024877800085`"}], ",",
+         
+        RowBox[{
+          SuperscriptBox["g1", 
+            TagBox[\((0, 0, 2)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", \(-10.90277073741464`\)}], 
+        ",", 
+        RowBox[{
+          SuperscriptBox["g2", 
+            TagBox[\((0, 0, 2)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "3.090290087181401`"}], ",", 
+        
+        RowBox[{
+          SuperscriptBox["h", 
+            TagBox[\((0, 0, 2)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "21.303331430126157`"}], ",",
+         
+        RowBox[{
+          SuperscriptBox["g1", 
+            TagBox[\((0, 1, 1)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "0"}], ",", 
+        RowBox[{
+          SuperscriptBox["g2", 
+            TagBox[\((0, 1, 1)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "0"}], ",", 
+        RowBox[{
+          SuperscriptBox["h", 
+            TagBox[\((0, 1, 1)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "0"}], ",", 
+        RowBox[{
+          SuperscriptBox["g1", 
+            TagBox[\((0, 2, 0)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "0.6054931748597385`"}], ",",
+         
+        RowBox[{
+          SuperscriptBox["g2", 
+            TagBox[\((0, 2, 0)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", \(-0.022838140144054067`\)}],
+         ",", 
+        RowBox[{
+          SuperscriptBox["h", 
+            TagBox[\((0, 2, 0)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "1.9424759423668478`"}], ",",
+         
+        RowBox[{
+          SuperscriptBox["g1", 
+            TagBox[\((1, 0, 1)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "0"}], ",", 
+        RowBox[{
+          SuperscriptBox["g2", 
+            TagBox[\((1, 0, 1)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "0"}], ",", 
+        RowBox[{
+          SuperscriptBox["h", 
+            TagBox[\((1, 0, 1)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "0"}], ",", 
+        RowBox[{
+          SuperscriptBox["g1", 
+            TagBox[\((1, 1, 0)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "0.009470273996295495`"}], 
+        ",", 
+        RowBox[{
+          SuperscriptBox["g2", 
+            TagBox[\((1, 1, 0)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "0.0010581983773125124`"}], 
+        ",", 
+        RowBox[{
+          SuperscriptBox["h", 
+            TagBox[\((1, 1, 0)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", "0.03299781349105114`"}], 
+        ",", 
+        RowBox[{
+          SuperscriptBox["g1", 
+            TagBox[\((2, 0, 0)\),
+              Derivative],
+            MultilineFunction->None], "\[Rule]", \(-0.000576771107294667`\)}],
+         ",", 
+        RowBox[{
+          SuperscriptBox["g2", 
+            TagBox[\((2, 0, 0)\),
+              Derivative],
+            MultilineFunction->None], 
+          "\[Rule]", \(-4.937794101529879`*^-6\)}], ",", 
+        RowBox[{
+          SuperscriptBox["h", 
+            TagBox[\((2, 0, 0)\),
+              Derivative],
+            MultilineFunction->None], 
+          "\[Rule]", \(-0.0002043664263734293`\)}]}], "}"}]], "Output"]
+}, Open  ]]
+}, Open  ]]
+}, Closed]]
+},
+FrontEndVersion->"5.0 for Microsoft Windows",
+ScreenRectangle->{{0, 1024}, {0, 695}},
+WindowSize->{1016, 668},
+WindowMargins->{{0, Automatic}, {Automatic, 0}}
+]
+
+(*******************************************************************
+Cached data follows.  If you edit this Notebook file directly, not
+using Mathematica, you must remove the line containing CacheID at
+the top of  the file.  The cache data will then be recreated when
+you save this file from within Mathematica.
+*******************************************************************)
+
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+
+(*NotebookFileOutline
+Notebook[{
+Cell[1754, 51, 2655, 81, 210, "Input"],
+
+Cell[CellGroupData[{
+Cell[4434, 136, 24, 0, 73, "Section"],
+Cell[4461, 138, 108, 2, 50, "Input"],
+Cell[4572, 142, 76, 1, 30, "Input"],
+Cell[4651, 145, 328, 7, 50, "Input"],
+Cell[4982, 154, 253, 5, 50, "Input"],
+Cell[5238, 161, 68, 1, 30, "Input"]
+}, Closed]],
+
+Cell[CellGroupData[{
+Cell[5343, 167, 35, 0, 43, "Section"],
+Cell[5381, 169, 1335, 25, 327, "Input"]
+}, Closed]],
+
+Cell[CellGroupData[{
+Cell[6753, 199, 59, 0, 43, "Section"],
+Cell[6815, 201, 1165, 21, 270, "Input"],
+Cell[7983, 224, 185, 3, 30, "Input"]
+}, Closed]],
+
+Cell[CellGroupData[{
+Cell[8205, 232, 30, 0, 43, "Section"],
+
+Cell[CellGroupData[{
+Cell[8260, 236, 40, 0, 38, "Subsection"],
+Cell[8303, 238, 56, 1, 30, "Input"]
+}, Closed]],
+
+Cell[CellGroupData[{
+Cell[8396, 244, 40, 0, 30, "Subsection"],
+
+Cell[CellGroupData[{
+Cell[8461, 248, 870, 18, 172, "Input"],
+Cell[9334, 268, 70, 1, 29, "Output"]
+}, Open  ]]
+}, Closed]],
+
+Cell[CellGroupData[{
+Cell[9453, 275, 30, 0, 30, "Subsection"],
+
+Cell[CellGroupData[{
+Cell[9508, 279, 37, 1, 30, "Input"],
+Cell[9548, 282, 5221, 155, 86, "Output"]
+}, Open  ]]
+}, Open  ]]
+}, Closed]]
+}
+]
+*)
+
+
+
+(*******************************************************************
+End of Mathematica Notebook file.
+*******************************************************************)
+
