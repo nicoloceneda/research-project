@@ -51,6 +51,40 @@ for t in range(1,len_sim):
     y[t] = np.exp(z[t]) * (k[t] ** alpha) * (l[t] ** (1 - alpha))
 
 
+
+# Drift
+
+theta = np.arange(-0.45,0.50,0.05)
+
+# Unconditional distribution
+
+freq = [1, 2, 4, 7, 11, 17, 23, 27, 29, 30,
+     29, 27, 23, 17, 11, 7, 4, 2, 1]
+f = (freq / np.sum(freq))
+
+# Plot unconditional distribution
+
+plt.bar(theta,height=f, width=0.05, edgecolor='black')
+plt.xlabel(r'$\theta$', fontsize=10)
+plt.ylabel(r'$f$', fontsize=10)
+plt.title('Unconditional distribution', fontsize=10)
+
+# Dimensions
+
+n = theta.shape[0]
+dt = 0.01
+T = 10
+
+# Posterior distribution
+
+dpi = np.zeros((T,n))
+pi = np.zeros((T,n))
+pi[0,:] = np.full(n, 1/n).reshape(1,-1)
+
+# Probability of a change
+
+p = 0.5
+
 # Precision
 sigma_D = 0.2
 sigma_e = 0.1
@@ -58,48 +92,21 @@ h_D = 1 / sigma_D
 h_e = 1 / sigma_e
 k = h_D ** 2 + h_e ** 2
 
-# Drift
-theta = np.arange(-0.45,0.50,0.05)
+# Stochastic differential equation (6)
 
-# Unconditional distribution
-freq = [1, 2, 4, 7, 11, 17, 23, 27, 29, 30,
-     29, 27, 23, 17, 11, 7, 4, 2, 1]
-f = freq / np.sum(freq)
+for t in range(T-1):
 
-# Plot unconditional distribution
-plt.bar(theta,height=f, width=0.05, edgecolor='black')
-plt.xlabel(r'$\theta$', fontsize=10)
-plt.ylabel(r'$f$', fontsize=10)
-plt.title('Unconditional distribution', fontsize=10)
+    dB_D = np.random.normal(0,1)
+    dB_e = np.random.normal(0,1)
+    m_theta = np.sum(pi[t,:] * theta)
+    print(min(pi[t,:]), max(pi[t,:]), sum(pi[t,:]))
+    theta_ell = theta[5] #theta[np.random.randint(19)]
 
-# Probability of a change
-p = 0.5
+    for i in range(n):
 
-# Posterior distribution
-pi = np.full(19, 1/19)
+        dpi[t+1,i] = (p * (f[i] - pi[t,i]) + k * pi[t,i] * (theta[i] - m_theta) * (theta_ell - m_theta)) * dt \
+                     + pi[t,i] * (theta[i] - m_theta) * (h_D * dB_D + h_e * dB_e)
+        pi[t+1,i] = pi[t,i] + dpi[t+1,i]
 
-# Time step
-dt = 0.01
-
-dp = np.zeros(19)
-
-dp_store = list()
-pi_store = list()
-
-for t in range(100):
-
-    dB_D = np.random.normal(0, 1 / h_D)
-    dB_e = np.random.normal(0, 1 / h_e)
-    m_theta = np.sum(pi * theta)
-    theta_ell = theta[np.random.randint(19)]
-
-    for i in range(len(theta)):
-
-        dp[i] = (p * (f[i] - pi[i]) + k * pi[i] * (theta[i] - m_theta) * (theta_ell - m_theta)) * dt + pi[i] * (theta[i] - m_theta) * (h_D * dB_D + h_e * dB_e)
-        pi[i] = pi[i]+ dp[i]
-
-    dp_store.append(dp)
-    pi_store.append(pi)
-
-dp_store = np.array(dp_store)
-pi_store = np.array(pi_store)
+    print(min(dpi[t + 1, :]), max(dpi[t + 1, :]), sum(dpi[t + 1, :]))
+    print(min(pi[t+1,:]), max(pi[t+1,:]), sum(pi[t+1,:]))
