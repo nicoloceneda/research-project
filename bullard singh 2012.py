@@ -67,8 +67,10 @@ freq = [1, 2, 4, 7, 11, 17, 23, 27, 29, 30,
 f = freq / np.sum(freq)
 
 # Plot unconditional distribution
-plt.plot(f)
-plt.bar(theta,height=f, width=0.05)
+plt.bar(theta,height=f, width=0.05, edgecolor='black')
+plt.xlabel(r'$\theta$', fontsize=10)
+plt.ylabel(r'$f$', fontsize=10)
+plt.title('Unconditional distribution', fontsize=10)
 
 # Probability of a change
 p = 0.5
