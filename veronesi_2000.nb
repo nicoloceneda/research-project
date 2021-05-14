@@ -1,0 +1,238 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 12.2' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      7203,        228]
+NotebookOptionsPosition[      6189,        202]
+NotebookOutlinePosition[      6587,        218]
+CellTagsIndexPosition[      6544,        215]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Lambda matrix", "Subsection",
+ CellChangeTimes->{{3.829986575260498*^9, 
+  3.829986580707852*^9}},ExpressionUUID->"f11871e1-069a-4c9b-94ab-\
+418411f3e7c5"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"\[CapitalLambda]mat", "=", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"-", "\[Lambda]"}], ",", "\[Lambda]"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"\[Mu]", ",", 
+       RowBox[{"-", "\[Mu]"}]}], "}"}]}], "}"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.829986244136505*^9, 3.829986345732086*^9}, {
+  3.8299863954705753`*^9, 3.82998639578863*^9}, {3.829986470242938*^9, 
+  3.829986470705071*^9}, {3.829986546572866*^9, 3.829986553867936*^9}},
+ CellLabel->"In[1]:=",ExpressionUUID->"58d23ab7-46a3-4e5a-a59d-91660c6fa7ea"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Transition matrix", "Subsection",
+ CellChangeTimes->{{3.829986387526305*^9, 
+  3.829986405637854*^9}},ExpressionUUID->"6a46ca5b-2c13-4e1a-9210-\
+5943de6d21e9"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"Tmat", "[", "t_", "]"}], "=", 
+   RowBox[{"MatrixExp", "[", 
+    RowBox[{"\[CapitalLambda]mat", "*", "t"}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{
+  3.829986424841815*^9, 3.8299865892564383`*^9, {3.8299866265242*^9, 
+   3.8299866268661003`*^9}},
+ CellLabel->"In[4]:=",ExpressionUUID->"4d353f74-aaf9-4c8d-bd7b-568005989533"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Tmat", "[", "t", "]"}], "//", "MatrixForm"}]], "Input",
+ CellChangeTimes->{
+  3.829986606673293*^9, {3.829986639285667*^9, 3.829986660195553*^9}},
+ NumberMarks->False,
+ CellLabel->"In[5]:=",ExpressionUUID->"a9171631-a348-4d17-b13a-0f835b7a2ce2"],
+
+Cell[BoxData[
+ TagBox[
+  RowBox[{"(", "\[NoBreak]", GridBox[{
+     {
+      RowBox[{
+       FractionBox[
+        RowBox[{
+         SuperscriptBox["\[ExponentialE]", 
+          RowBox[{"t", " ", 
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{"-", "\[Lambda]"}], "-", "\[Mu]"}], ")"}]}]], " ", 
+         "\[Lambda]"}], 
+        RowBox[{"\[Lambda]", "+", "\[Mu]"}]], "+", 
+       FractionBox["\[Mu]", 
+        RowBox[{"\[Lambda]", "+", "\[Mu]"}]]}], 
+      RowBox[{
+       FractionBox["\[Lambda]", 
+        RowBox[{"\[Lambda]", "+", "\[Mu]"}]], "-", 
+       FractionBox[
+        RowBox[{
+         SuperscriptBox["\[ExponentialE]", 
+          RowBox[{"t", " ", 
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{"-", "\[Lambda]"}], "-", "\[Mu]"}], ")"}]}]], " ", 
+         "\[Lambda]"}], 
+        RowBox[{"\[Lambda]", "+", "\[Mu]"}]]}]},
+     {
+      RowBox[{
+       FractionBox["\[Mu]", 
+        RowBox[{"\[Lambda]", "+", "\[Mu]"}]], "-", 
+       FractionBox[
+        RowBox[{
+         SuperscriptBox["\[ExponentialE]", 
+          RowBox[{"t", " ", 
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{"-", "\[Lambda]"}], "-", "\[Mu]"}], ")"}]}]], " ", 
+         "\[Mu]"}], 
+        RowBox[{"\[Lambda]", "+", "\[Mu]"}]]}], 
+      RowBox[{
+       FractionBox["\[Lambda]", 
+        RowBox[{"\[Lambda]", "+", "\[Mu]"}]], "+", 
+       FractionBox[
+        RowBox[{
+         SuperscriptBox["\[ExponentialE]", 
+          RowBox[{"t", " ", 
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{"-", "\[Lambda]"}], "-", "\[Mu]"}], ")"}]}]], " ", 
+         "\[Mu]"}], 
+        RowBox[{"\[Lambda]", "+", "\[Mu]"}]]}]}
+    },
+    GridBoxAlignment->{"Columns" -> {{Center}}, "Rows" -> {{Baseline}}},
+    GridBoxSpacings->{"Columns" -> {
+        Offset[0.27999999999999997`], {
+         Offset[0.7]}, 
+        Offset[0.27999999999999997`]}, "Rows" -> {
+        Offset[0.2], {
+         Offset[0.4]}, 
+        Offset[0.2]}}], "\[NoBreak]", ")"}],
+  Function[BoxForm`e$, 
+   MatrixForm[BoxForm`e$]]]], "Output",
+ CellChangeTimes->{3.8299865961888447`*^9, 3.829986661419882*^9},
+ CellLabel->
+  "Out[5]//MatrixForm=",ExpressionUUID->"eedcee46-2ff0-4fe3-aa98-\
+900c3e4a3632"]
+}, Open  ]],
+
+Cell[TextData[{
+ "Where element (1,1) is P(",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["x", 
+    RowBox[{"t", "+", "s"}]], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "18cc78f8-e936-4d3a-ad15-e07673c205eb"],
+ "=1|",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["x", "t"], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "60cd2c51-4bec-41f7-8330-5d530b36df93"],
+ "=1); element (1,2) is P(",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["x", 
+    RowBox[{"t", "+", "s"}]], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "45bff4a6-fb1d-4b9a-b4ff-3dc8be128533"],
+ "=2|",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["x", "t"], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "4e6d0dc5-76a5-4d12-b85f-b167b5fcf348"],
+ "=1); element (2,2) is P(",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["x", 
+    RowBox[{"t", "+", "s"}]], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "73df7eaf-4e35-42d3-b726-1d7b3ee9c202"],
+ "=2|",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["x", "t"], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "fc276575-daf1-4955-834f-28d775c76028"],
+ "=2); element (2,1) is P(",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["x", 
+    RowBox[{"t", "+", "s"}]], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "06ed5184-0f51-479e-8a7b-0732832ca2db"],
+ "=1|",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["x", "t"], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "311aa405-4fd4-4e32-9174-06793709de55"],
+ "=2)."
+}], "Text",
+ CellChangeTimes->{{3.829986720190637*^9, 
+  3.829986876586424*^9}},ExpressionUUID->"8873810f-30ec-4f3c-b04a-\
+34c60f89c5f0"]
+}, Open  ]]
+},
+WindowSize->{808, 747},
+WindowMargins->{{Automatic, 168}, {-8, Automatic}},
+FrontEndVersion->"12.2 for Mac OS X x86 (64-bit) (December 12, 2020)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"0357fb08-5d6d-427f-92b9-11e83424b703"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 161, 3, 54, "Subsection",ExpressionUUID->"f11871e1-069a-4c9b-94ab-418411f3e7c5"],
+Cell[744, 27, 599, 14, 30, "Input",ExpressionUUID->"58d23ab7-46a3-4e5a-a59d-91660c6fa7ea"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[1380, 46, 165, 3, 54, "Subsection",ExpressionUUID->"6a46ca5b-2c13-4e1a-9210-5943de6d21e9"],
+Cell[1548, 51, 377, 9, 30, "Input",ExpressionUUID->"4d353f74-aaf9-4c8d-bd7b-568005989533"],
+Cell[CellGroupData[{
+Cell[1950, 64, 280, 6, 30, "Input",ExpressionUUID->"a9171631-a348-4d17-b13a-0f835b7a2ce2"],
+Cell[2233, 72, 2219, 67, 88, "Output",ExpressionUUID->"eedcee46-2ff0-4fe3-aa98-900c3e4a3632"]
+}, Open  ]],
+Cell[4467, 142, 1706, 57, 58, "Text",ExpressionUUID->"8873810f-30ec-4f3c-b04a-34c60f89c5f0"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
+
