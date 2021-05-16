@@ -1,16 +1,17 @@
+# Import libraries
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-
 # Drift
 
-theta = np.arange(-0.45,0.50,0.05)
+theta = np.arange(-0.004, 0.0065, 0.0005)
 theta_ell = theta[14]
 
 # Unconditional distribution
 
-freq = [1, 2, 4, 7, 11, 17, 23, 27, 29, 30, 29, 27, 23, 17, 11, 7, 4, 2, 1]
+freq = [1, 2, 4, 7, 11, 17, 23, 25, 27, 29, 30, 29, 27, 25, 23, 17, 11, 7, 4, 2, 1]
 f = (freq / np.sum(freq))
 
 # Dimensions
@@ -21,9 +22,9 @@ T = 10
 
 # Posterior distribution
 
-dpi = np.zeros((T,n))
-pi = np.zeros((T,n))
-pi[0,:] = np.full(n, 1/n).reshape(1,-1)
+dpi = np.zeros((T, n))
+pi = np.zeros((T, n))
+pi[0, :] = np.full(n, 1/n).reshape(1, -1)
 
 # Probability of a change
 
@@ -49,6 +50,7 @@ for t in range(int(T/dt)):
 
         dpi[t+1,i] = (p * (f[i] - pi[t,i]) + k * pi[t,i] * (theta[i] - m_theta) * (theta_ell - m_theta)) * dt \
                      + pi[t,i] * (theta[i] - m_theta) * (h_D * dB_D + h_e * dB_e)
+        log_pi
         pi[t+1,i] = pi[t,i] + dpi[t+1,i]
 
     print(min(dpi[t + 1, :]), max(dpi[t + 1, :]), sum(dpi[t + 1, :]))
@@ -57,7 +59,7 @@ for t in range(int(T/dt)):
 # Plot unconditional and prior distributions
 
 plt.bar(theta,height=pi[0,:], width=0.05, edgecolor='black', color='lightcyan', label='Prior')
-plt.bar(theta,height=f, width=0.05, edgecolor='black', color='blue', alpha = 0.6, label='Unconditional')
+plt.bar(theta, height=f, width=0.0005, edgecolor='black', color='blue', alpha = 0.6, label='Unconditional')
 plt.vlines(theta_ell, ymin=0, ymax=max(f), color='black', linestyles='dashed', label='True ' + r'$\theta$')
 plt.xlabel(r'$\theta$', fontsize=10)
 plt.ylabel('Probability', fontsize=10)
