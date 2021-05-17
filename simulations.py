@@ -69,5 +69,6 @@ ax.set_ylabel('$x_t$')
 ax.set_xlim(left=0, right=gbm.num_sim)
 fig2.tight_layout()
 
+# Display figures
 
 plt.show()
