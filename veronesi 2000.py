@@ -22,6 +22,9 @@ T = 10
 
 # Posterior distribution
 
+dlog_pi = np.zeros((T, n))
+log_pi = np.zeros((T, n))
+
 dpi = np.zeros((T, n))
 pi = np.zeros((T, n))
 pi[0, :] = np.full(n, 1/n).reshape(1, -1)
@@ -38,6 +41,28 @@ h_e = 1 / sigma_e
 k = h_D ** 2 + h_e ** 2
 
 # Stochastic differential equation (6)
+
+for t in range(int(T/dt)):
+
+    dB_D = np.random.normal(0,1)
+    dB_e = np.random.normal(0,1)
+    m_theta = np.sum(pi[t,:] * theta)
+    print(min(pi[t,:]), max(pi[t,:]), sum(pi[t,:]))
+
+    for i in range(n):
+
+        dlog_pi[t+1, i] = (p * (f[i] - pi[t, i]) / pi[t, i] + k * (theta[i] - m_theta) * (theta_ell - m_theta)) * dt \
+                          + (theta[i] - m_theta) * (h_D * dB_D + h_e * dB_e) - 0.5 * (theta[i] - m_theta) ** 2 * (h_D ** 2 + h_e ** 2) * dt
+
+        log_pi[t+1, i] = log_pi[t, i] + dlog_pi[t+1, i]
+
+    pi[t + 1, :] = np.exp(log_pi[t+1, :])
+    pi[t + 1, :] = pi[t + 1, :] / np.sum(pi[t + 1, :])
+
+    print(min(dpi[t + 1, :]), max(dpi[t + 1, :]), sum(dpi[t + 1, :]))
+    print(min(pi[t+1,:]), max(pi[t+1,:]), sum(pi[t+1,:]))
+
+
 
 for t in range(int(T/dt)):
 
