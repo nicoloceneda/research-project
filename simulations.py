@@ -69,6 +69,36 @@ ax.set_ylabel('$x_t$')
 ax.set_xlim(left=0, right=gbm.num_sim)
 fig2.tight_layout()
 
+
+# -------------------------------------------------------------------------------
+# ITO PROCESS
+# -------------------------------------------------------------------------------
+
+
+# Simulate an Ito Process
+
+ip = ItoProcess(x0=0, mu=0.2, sigma=1.0, dt=0.1, T=100, seed=0)
+
+ip_sims = []
+
+for i in range(10):
+
+    ip_sims.append(ip.sim())
+
+ip_sims = np.array(gbm_sims).T
+
+fig3, ax = plt.subplots(nrows=1, ncols=1)
+
+ax.plot(ip_sims, linewidth=0.5)
+ax.hlines(y=0, xmin=0, xmax=ip.num_sim, linewidth=0.5, color='black')
+ax.set_title('Ito Process - $\mu$={:.1f}, $\sigma$={:.1f}'.format(ip.mu * ip.dt, ip.sigma**2 * ip.dt))
+ax.set_xlabel('t')
+ax.set_ylabel('$x_t$')
+ax.set_xlim(left=0, right=ip.num_sim)
+fig3.tight_layout()
+
 # Display figures
 
 plt.show()
+
+

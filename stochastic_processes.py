@@ -20,9 +20,9 @@ import matplotlib.pyplot as plt
 
 # Design the brownian motion
 
-class BrownianMotion:
+class Stochastic:
 
-    """ Brownian motion
+    """ Stochastic Process
 
             Parameters:
             ----------
@@ -37,16 +37,15 @@ class BrownianMotion:
 
             Attributes:
             ----------
-            num_sim : integer
+            num_simulations : integer
                 Number of simulated periods
 
             Methods:
             -------
-            sim : array [num_sim, ]
+            simulate : array [num_simulations, ]
                 Simulated values
             sim_stats : string
-
-        """
+    """
 
     def __init__(self, x0=0.0, dt=0.1, T=100, seed=1):
 
@@ -54,10 +53,9 @@ class BrownianMotion:
         self.dt = dt
         self.T = T
         self.seed = seed
+        self.num_simulations = round(T/dt)
 
-        self.num_sim = round(T/dt)
-
-    def sim(self):
+    def simulate(self):
 
         if self.seed == 1:
 
@@ -66,7 +64,7 @@ class BrownianMotion:
         xt = self.x0
         x_sim = np.array(xt)
 
-        for i in range(self.num_sim):
+        for i in range(self.num_simulations):
 
             epsilon = np.random.normal(loc=0, scale=1)
             dx = epsilon * np.sqrt(self.dt)
@@ -74,6 +72,84 @@ class BrownianMotion:
             x_sim = np.append(x_sim, xt)
 
         return x_sim
+
+
+class BrownianMotion(Stochastic):
+
+    """ Brownian Motion
+
+            Parameters:
+            ----------
+            x0 : float
+                Starting value
+            dt : float
+                Time interval
+            T : float
+                Ending time
+            seed : integer
+                1 if a seed is set; 0 otherwise
+    """
+
+    def __init__(self, x0=0.0, dt=0.1, T=100, seed=1):
+
+        super().__init__(x0, dt, T, seed)
+
+class GeneralizedBrownianMotion(Stochastic):
+
+    """ Generalized Brownian Motion
+
+            Parameters:
+            ----------
+            mu : float
+                drift rate
+            sigma : float
+                variance rate
+            x0 : float
+                Starting value
+            dt : float
+                Time interval
+            T : float
+                Ending time
+            seed : integer
+                1 if a seed is set; 0 otherwise
+    """
+
+    def __init__(self, mu=0.1, sigma=1.0, x0=0.0, dt=0.1, T=100, seed=1):
+
+        super().__init__(x0, dt, T, seed)
+        self.mu = mu
+        self.sigma = sigma
+
+class ItoProcess(Stochastic):
+
+    """ Ito Process
+
+            Parameters:
+            ----------
+            mu : float
+                drift rate
+            sigma : float
+                variance rate
+            x0 : float
+                Starting value
+            dt : float
+                Time interval
+            T : float
+                Ending time
+            seed : integer
+                1 if a seed is set; 0 otherwise
+    """
+
+    def __init__(self, mu=0.1, sigma=1.0, x0=0.0, dt=0.1, T=100, seed=1):
+
+        super().__init__(x0, dt, T, seed)
+        self.mu = mu
+        self.sigma = sigma
+
+
+
+
+
 
     def sim_stats(self, message=0):
 
@@ -100,7 +176,7 @@ class BrownianMotion:
 # -------------------------------------------------------------------------------
 
 
-# Design the brownian motion
+# Design the generalized brownian motion
 
 class GeneralizedBrownianMotion:
 
@@ -123,18 +199,18 @@ class GeneralizedBrownianMotion:
 
             Attributes:
             ----------
-            num_sim : integer
+            num_simulations : integer
                 Number of simulated periods
 
             Methods:
             -------
-            sim : array [num_sim, ]
+            sim : array [num_simulations, ]
                 Simulated values
             sim_stats : string
 
         """
 
-    def __init__(self, x0=0.0, mu=0.0, sigma=1.0, dt=0.1, T=100, seed=1):
+    def __init__(self, x0=0.0, mu=0.1, sigma=1.0, dt=0.1, T=100, seed=1):
 
         self.x0 = x0
         self.mu = mu
@@ -143,7 +219,7 @@ class GeneralizedBrownianMotion:
         self.T = T
         self.seed = seed
 
-        self.num_sim = round(T/dt)
+        self.num_simulations = round(T/dt)
 
     def sim(self):
 
@@ -154,7 +230,7 @@ class GeneralizedBrownianMotion:
         xt = self.x0
         x_sim = np.array(xt)
 
-        for i in range(self.num_sim):
+        for i in range(self.num_simulations):
 
             epsilon = np.random.normal(loc=0, scale=1)
             dx = self.mu * self.dt + self.sigma * epsilon * np.sqrt(self.dt)
@@ -188,11 +264,11 @@ class GeneralizedBrownianMotion:
 # -------------------------------------------------------------------------------
 
 
-# Design the brownian motion
+# Design the Ito process
 
-class Stochastic:
+class ItoProcess:
 
-    """ Ito Process
+    """ Ito process
 
             Parameters:
             ----------
@@ -211,22 +287,19 @@ class Stochastic:
 
             Attributes:
             ----------
-            num_sim : integer
+            num_simulations : integer
                 Number of simulated periods
 
             Methods:
             -------
-            sim : array [num_sim, ]
+            sim : array [num_simulations, ]
                 Simulated values
             sim_stats : string
 
         """
 
-    # Initialization
+    def __init__(self, x0=0.0, mu=0.1, sigma=1.0, dt=0.1, T=100, seed=1):
 
-    def __init__(self, process='BrownianMotion', x0=1.0, mu=0.2, sigma=1.0, dt=0.1, T=100, seed=1):
-
-        self.process = process
         self.x0 = x0
         self.mu = mu
         self.sigma = sigma
@@ -234,9 +307,7 @@ class Stochastic:
         self.T = T
         self.seed = seed
 
-        self.num_sim = round(T/dt)
-
-    # List of processes
+        self.num_simulations = round(T/dt)
 
     def sim(self):
 
@@ -247,19 +318,10 @@ class Stochastic:
         xt = self.x0
         x_sim = np.array(xt)
 
-        if self.process == 'BrownianMotion':
-
-
-
-            dx = epsilon * np.sqrt(self.dt)
-            dx = self.mu * self.dt + self.sigma * epsilon * np.sqrt(self.dt)
-            dx = self.mu * xt * self.dt + self.sigma * xt * epsilon * np.sqrt(self.dt)
-
-        for i in range(self.num_sim):
+        for i in range(self.num_simulations):
 
             epsilon = np.random.normal(loc=0, scale=1)
             dx = self.mu * xt * self.dt + self.sigma * xt * epsilon * np.sqrt(self.dt)
-
             xt = xt + dx
             x_sim = np.append(x_sim, xt)
 
@@ -285,16 +347,4 @@ class Stochastic:
             return stats
 
 
-def process1(x):
 
-    return x + 1
-
-def process2(x):
-
-    return x + 2
-
-s=1
-if s==1:
-
-    myf = process1(x)
-    x = myf
