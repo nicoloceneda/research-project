@@ -179,26 +179,5 @@ class ItoProcess(Stochastic):
 
 
 
-    #def sim_stats(self, message=0):
-
-    #    x_sim = self.sim()
-    #    dx = x_sim[1:] - x_sim[:-1]
-    #    sim_mean = np.mean(dx)
-    #    sim_variance = np.var(dx)
-
-    #    if message == 1:
-
-    #        print('\nStatistics:'\
-    #              '\n----------'\
-    #              '\nmean: {}'\
-    #              '\nvariance: {}'.format(sim_mean, sim_variance))
-    #    else:
-
-    #        stats = [sim_mean, sim_variance]
-
-    #        return stats
-
-
-
 
 
