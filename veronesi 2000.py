@@ -22,27 +22,31 @@ import matplotlib.pyplot as plt
 
 
 # Drift
-theta = np.arange(-0.004, 0.0065, 0.0005)
+theta = np.arange(-0.0045, 0.0070, 0.0005)
+
+# Dimensions
+n = theta.shape[0]
 
 # Unconditional distribution
-freq = [1, 2, 4, 7, 11, 17, 23, 25, 27, 29, 30, 29, 27, 25, 23, 17, 11, 7, 4, 2, 1]
-f = (freq / np.sum(freq))
+f = np.full(n, 1) / n
+#freq = [1, 2, 4, 7, 11, 17, 23, 25, 27, 29, 30, 35, 30, 29, 27, 25, 23, 17, 11, 7, 4, 2, 1]
+#freq = [1, 2, 4, 7, 11, 17, 23, 25, 27, 29, 30, 32, 35, 39, 45, 39, 32, 30, 29, 27, 25, 23, 17]
+#freq = [4, 5, 7, 10, 14, 20, 26, 28, 31, 32, 35, 25, 24, 21, 20, 19, 17, 14, 11, 7, 4, 2, 1]
+#f = (freq / np.sum(freq))
 
 # Probability of a change
 p = 0.0167
 
 # Risk aversion
 gamma_g1 = [1.0, 1.5, 2.0, 2.5]
-gamma_s1 = [0.0, 0.15, 0.5, 1.0]
+gamma_s1 = [1.0, 0.5, 0.15, 0.0]
 
 # Discount rate
-delta = 0.01
+delta = 0.0033
 
 # Precision
 sigmaD = 0.015
 
-# Dimensions
-n = theta.shape[0]
 
 # -------------------------------------------------------------------------------
 # FUNCTION C(THETA)
@@ -71,17 +75,33 @@ def C_theta(gamma_f):
 # Simulations
 
 C_theta_g1 = pd.DataFrame(columns=gamma_g1)
+C_theta_s1 = pd.DataFrame(columns=gamma_s1)
 
-for g in gamma_g1:
+for g_g1, g_s1 in zip(gamma_g1, gamma_s1):
 
-    C_theta_g1.loc[:,g] = C_theta(g)
+    C_theta_g1.loc[:, g_g1] = C_theta(g_g1)
+    C_theta_s1.loc[:, g_s1] = C_theta(g_s1)
 
+# Plot figure
 
-plt.plot(theta, C_theta_g1)
+fig_1, ax = plt.subplots(nrows=1, ncols=2, figsize=(11, 4))
 
+ax[0].plot(theta, C_theta_g1, label=['$\gamma$=1.0', '$\gamma$=1.5', '$\gamma$=2.0', '$\gamma$=2.5'])
+ax[0].legend(fontsize=8, loc='upper right')
+ax[0].set_ylabel('C($\Theta$)', fontsize=10)
+ax[0].set_xlabel('$\Theta$', fontsize=10)
+ax[0].set_title('C($\Theta$) for $\gamma > 1$',fontsize=10)
+ax[0].set_xlim(xmin=np.min(theta), xmax=np.max(theta))
 
+ax[1].plot(theta, C_theta_s1, label=['$\gamma$=1.0', '$\gamma$=0.5', '$\gamma$=0.15', '$\gamma$=0.0'])
+ax[1].legend(fontsize=8, loc='upper left')
+ax[1].set_ylabel('C($\Theta$)', fontsize=10)
+ax[1].set_xlabel('$\Theta$', fontsize=10)
+ax[1].set_title('C($\Theta$) for $\gamma < 1$',fontsize=10)
+ax[1].set_xlim(xmin=np.min(theta), xmax=np.max(theta))
 
-
+fig_1.tight_layout()
+fig_1.savefig('images/fig_1.png')
 
 
 theta_ell = theta[14]
