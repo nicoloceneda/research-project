@@ -17,23 +17,75 @@ import matplotlib.pyplot as plt
 
 
 # -------------------------------------------------------------------------------
-# REPLICATION
+# PARAMETERS
 # -------------------------------------------------------------------------------
 
 
 # Drift
-
 theta = np.arange(-0.004, 0.0065, 0.0005)
-theta_ell = theta[14]
 
 # Unconditional distribution
-
 freq = [1, 2, 4, 7, 11, 17, 23, 25, 27, 29, 30, 29, 27, 25, 23, 17, 11, 7, 4, 2, 1]
 f = (freq / np.sum(freq))
 
-# Dimensions
+# Probability of a change
+p = 0.0167
 
+# Risk aversion
+gamma_g1 = [1.0, 1.5, 2.0, 2.5]
+gamma_s1 = [0.0, 0.15, 0.5, 1.0]
+
+# Discount rate
+delta = 0.01
+
+# Precision
+sigmaD = 0.015
+
+# Dimensions
 n = theta.shape[0]
+
+# -------------------------------------------------------------------------------
+# FUNCTION C(THETA)
+# -------------------------------------------------------------------------------
+
+# Function for the constant
+
+def kappa(gamma_f):
+
+    k = 0
+
+    for i in range(n):
+
+        k += f[i] / (delta + p + (gamma_f-1) * theta[i] + 0.5 * gamma_f * (1-gamma_f) * sigmaD ** 2)
+
+    return k
+
+# Function C(theta)
+
+def C_theta(gamma_f):
+
+    c = 1 / ((delta + p + (gamma_f-1) * theta + 0.5 * gamma_f * (1-gamma_f) * sigmaD ** 2) * (1 - p * kappa(gamma_f)))
+
+    return c
+
+# Simulations
+
+C_theta_g1 = pd.DataFrame(columns=gamma_g1)
+
+for g in gamma_g1:
+
+    C_theta_g1.loc[:,g] = C_theta(g)
+
+
+plt.plot(theta, C_theta_g1)
+
+
+
+
+
+
+theta_ell = theta[14]
+
 dt = 0.001
 T = 10
 
@@ -46,12 +98,9 @@ dpi = np.zeros((T, n))
 pi = np.zeros((T, n))
 pi[0, :] = np.full(n, 1/n).reshape(1, -1)
 
-# Probability of a change
 
-p = 0.5
 
-# Precision
-sigma_D = 0.2
+
 sigma_e = 0.1
 h_D = 1 / sigma_D
 h_e = 1 / sigma_e
@@ -113,23 +162,15 @@ plt.title('Probability distribution', fontsize=10)
 
 n = 100
 f = np.ones(n) / n # (n * (n+1) / 2) * np.arange(1,n+1)
-delta = 0.02
+
 gamma = np.arange(1, 3, 0.5)
 p = 0.01
-sigmaD_2 = 0.015
+
 theta = np.linspace(-0.0045, 0.006, n)
 
-def K(gamma_f):
-    k = 0
-    for i in range(n):
-        k += f[i] / (delta + p + (gamma_f-1) * theta[i] + 0.5 * gamma_f * (1-gamma_f) * sigmaD_2)
-    return k
 
-def C(gamma_f):
-    c = 1 / ((delta + p + (gamma_f-1) * theta + 0.5 * gamma_f * (1-gamma_f) * sigmaD_2) * (1 - p * K(gamma_f)))
-    return c
 
-C_theta = {}
+
 for g in gamma:
 
     C_theta[g] = list(C(g))
