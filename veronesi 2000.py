@@ -17,40 +17,99 @@ import matplotlib.pyplot as plt
 
 
 # -------------------------------------------------------------------------------
+# INVESTORS
+# -------------------------------------------------------------------------------
+
+
+# Utility function
+
+def utility(cons_, gamma_, delta_, t_):
+
+    if gamma_ != 1:
+
+        util_ = np.exp(- delta_ * t_) * cons_ ** (1 - gamma_) / (1 - gamma_)
+
+    else:
+
+        util_ = np.exp(- delta_ * t_) * np.log(cons_)
+
+    return util_
+
+# Simulation
+
+cons = np.arange(0.5, 5, 0.005)
+gammas = [0.0, 0.5, 1.0, 1.5, 2.0]
+
+util = pd.DataFrame(columns=gammas)
+
+for g in gammas:
+
+    util.loc[:, g] = utility(cons, g, 0, 0)
+
+# Plot utility function
+
+fig_1, ax = plt.subplots(nrows=1, ncols=1, figsize=(5.5, 4))
+
+ax.plot(cons, util.iloc[:,0], color='r')
+ax.plot(cons, util.iloc[:,1:], color='b')
+ax.hlines(y=0, xmin=np.min(cons), xmax=np.max(cons), color='black', linestyles='dashed')
+plt.text(4.4, 4.9, '$\gamma$=0.0')
+plt.text(4.4, 3.9, '$\gamma$=0.5')
+plt.text(4.4, 1.1, '$\gamma$=1.0')
+plt.text(4.4, -0.7, '$\gamma$=1.5')
+plt.text(4.4, -1.4, '$\gamma$=2.0')
+ax.set_ylabel('U(C)', fontsize=10)
+ax.set_xlabel('C', fontsize=10)
+ax.set_title('U(C) for varying $\gamma$',fontsize=10)
+ax.set_xlim(xmin=np.min(cons), xmax=np.max(cons))
+
+fig_1.savefig('images/fig_1.png')
+
+
+# -------------------------------------------------------------------------------
 # PARAMETERS
 # -------------------------------------------------------------------------------
 
 
 # Drift
-theta = np.arange(-0.0045, 0.0070, 0.0005)
+
+thetas = np.arange(-0.0045, 0.0070, 0.0005)
 
 # Dimensions
-n = theta.shape[0]
+
+n = thetas.shape[0]
 
 # Unconditional distribution
+
 f = np.full(n, 1) / n
 #freq = [1, 2, 4, 7, 11, 17, 23, 25, 27, 29, 30, 35, 30, 29, 27, 25, 23, 17, 11, 7, 4, 2, 1]
-#freq = [1, 2, 4, 7, 11, 17, 23, 25, 27, 29, 30, 32, 35, 39, 45, 39, 32, 30, 29, 27, 25, 23, 17]
-#freq = [4, 5, 7, 10, 14, 20, 26, 28, 31, 32, 35, 25, 24, 21, 20, 19, 17, 14, 11, 7, 4, 2, 1]
 #f = (freq / np.sum(freq))
 
 # Probability of a change
+
 p = 0.0167
 
 # Risk aversion
-gamma_g1 = [1.0, 1.5, 2.0, 2.5]
-gamma_s1 = [1.0, 0.5, 0.15, 0.0]
+
+gammas_g1 = [1.0, 1.5, 2.0, 2.5]
+gammas_s1 = [1.0, 0.5, 0.15, 0.0]
+gammas = np.arange(0, 5, 0.0005)
 
 # Discount rate
+
 delta = 0.0033
 
 # Precision
-sigmaD = 0.015
 
+sigma_D = 0.015
+sigma_e = float('inf')
+sigma_theta = 0.0011
+sigmas_theta = np.arange(0, 0.0015, 0.0005)
 
 # -------------------------------------------------------------------------------
 # FUNCTION C(THETA)
 # -------------------------------------------------------------------------------
+
 
 # Function for the constant
 
@@ -60,24 +119,24 @@ def kappa(gamma_f):
 
     for i in range(n):
 
-        k += f[i] / (delta + p + (gamma_f-1) * theta[i] + 0.5 * gamma_f * (1-gamma_f) * sigmaD ** 2)
+        k += f[i] / (delta + p + (gamma_f-1) * thetas[i] + 0.5 * gamma_f * (1-gamma_f) * sigma_D ** 2)
 
     return k
 
-# Function C(theta)
+# Function C(thetas)
 
 def C_theta(gamma_f):
 
-    c = 1 / ((delta + p + (gamma_f-1) * theta + 0.5 * gamma_f * (1-gamma_f) * sigmaD ** 2) * (1 - p * kappa(gamma_f)))
+    c = 1 / ((delta + p + (gamma_f-1) * thetas + 0.5 * gamma_f * (1-gamma_f) * sigma_D ** 2) * (1 - p * kappa(gamma_f)))
 
     return c
 
 # Simulations
 
-C_theta_g1 = pd.DataFrame(columns=gamma_g1)
-C_theta_s1 = pd.DataFrame(columns=gamma_s1)
+C_theta_g1 = pd.DataFrame(columns=gammas_g1)
+C_theta_s1 = pd.DataFrame(columns=gammas_s1)
 
-for g_g1, g_s1 in zip(gamma_g1, gamma_s1):
+for g_g1, g_s1 in zip(gammas_g1, gammas_s1):
 
     C_theta_g1.loc[:, g_g1] = C_theta(g_g1)
     C_theta_s1.loc[:, g_s1] = C_theta(g_s1)
@@ -86,25 +145,49 @@ for g_g1, g_s1 in zip(gamma_g1, gamma_s1):
 
 fig_1, ax = plt.subplots(nrows=1, ncols=2, figsize=(11, 4))
 
-ax[0].plot(theta, C_theta_g1, label=['$\gamma$=1.0', '$\gamma$=1.5', '$\gamma$=2.0', '$\gamma$=2.5'])
+ax[0].plot(thetas, C_theta_g1, label=['$\gamma$=1.0', '$\gamma$=1.5', '$\gamma$=2.0', '$\gamma$=2.5'])
 ax[0].legend(fontsize=8, loc='upper right')
 ax[0].set_ylabel('C($\Theta$)', fontsize=10)
 ax[0].set_xlabel('$\Theta$', fontsize=10)
 ax[0].set_title('C($\Theta$) for $\gamma > 1$',fontsize=10)
-ax[0].set_xlim(xmin=np.min(theta), xmax=np.max(theta))
+ax[0].set_xlim(xmin=np.min(thetas), xmax=np.max(thetas))
 
-ax[1].plot(theta, C_theta_s1, label=['$\gamma$=1.0', '$\gamma$=0.5', '$\gamma$=0.15', '$\gamma$=0.0'])
+ax[1].plot(thetas, C_theta_s1, label=['$\gamma$=1.0', '$\gamma$=0.5', '$\gamma$=0.15', '$\gamma$=0.0'])
 ax[1].legend(fontsize=8, loc='upper left')
 ax[1].set_ylabel('C($\Theta$)', fontsize=10)
 ax[1].set_xlabel('$\Theta$', fontsize=10)
 ax[1].set_title('C($\Theta$) for $\gamma < 1$',fontsize=10)
-ax[1].set_xlim(xmin=np.min(theta), xmax=np.max(theta))
+ax[1].set_xlim(xmin=np.min(thetas), xmax=np.max(thetas))
 
 fig_1.tight_layout()
 fig_1.savefig('images/fig_1.png')
 
 
-theta_ell = theta[14]
+# -------------------------------------------------------------------------------
+# FUNCTION mu_R
+# -------------------------------------------------------------------------------
+
+
+def m_theta():
+
+    pi_star = pi
+
+# Function v_theta
+
+def v_theta():
+
+
+
+
+# Function mu_R
+
+def mu_r():
+
+    mu = gamma * (sigma_D ** 2 + V_theta)
+
+    return mu
+
+theta_ell = thetas[14]
 
 dt = 0.001
 T = 10
@@ -132,13 +215,13 @@ for t in range(int(T/dt)):
 
     dB_D = np.random.normal(0,1)
     dB_e = np.random.normal(0,1)
-    m_theta = np.sum(pi[t,:] * theta)
+    m_theta = np.sum(pi[t,:] * thetas)
     print(min(pi[t,:]), max(pi[t,:]), sum(pi[t,:]))
 
     for i in range(n):
 
-        dlog_pi[t+1, i] = (p * (f[i] - pi[t, i]) / pi[t, i] + k * (theta[i] - m_theta) * (theta_ell - m_theta)) * dt \
-                          + (theta[i] - m_theta) * (h_D * dB_D + h_e * dB_e) - 0.5 * (theta[i] - m_theta) ** 2 * (h_D ** 2 + h_e ** 2) * dt
+        dlog_pi[t+1, i] = (p * (f[i] - pi[t, i]) / pi[t, i] + k * (thetas[i] - m_theta) * (theta_ell - m_theta)) * dt \
+                          + (thetas[i] - m_theta) * (h_D * dB_D + h_e * dB_e) - 0.5 * (thetas[i] - m_theta) ** 2 * (h_D ** 2 + h_e ** 2) * dt
 
         log_pi[t+1, i] = log_pi[t, i] + dlog_pi[t+1, i]
 
@@ -154,13 +237,13 @@ for t in range(int(T/dt)):
 
     dB_D = np.random.normal(0,1)
     dB_e = np.random.normal(0,1)
-    m_theta = np.sum(pi[t,:] * theta)
+    m_theta = np.sum(pi[t,:] * thetas)
     print(min(pi[t,:]), max(pi[t,:]), sum(pi[t,:]))
 
     for i in range(n):
 
-        dpi[t+1,i] = (p * (f[i] - pi[t,i]) + k * pi[t,i] * (theta[i] - m_theta) * (theta_ell - m_theta)) * dt \
-                     + pi[t,i] * (theta[i] - m_theta) * (h_D * dB_D + h_e * dB_e)
+        dpi[t+1,i] = (p * (f[i] - pi[t,i]) + k * pi[t,i] * (thetas[i] - m_theta) * (theta_ell - m_theta)) * dt \
+                     + pi[t,i] * (thetas[i] - m_theta) * (h_D * dB_D + h_e * dB_e)
         log_pi
         pi[t+1,i] = pi[t,i] + dpi[t+1,i]
 
@@ -169,8 +252,8 @@ for t in range(int(T/dt)):
 
 # Plot unconditional and prior distributions
 
-plt.bar(theta,height=pi[0,:], width=0.05, edgecolor='black', color='lightcyan', label='Prior')
-plt.bar(theta, height=f, width=0.0005, edgecolor='black', color='blue', alpha = 0.6, label='Unconditional')
+plt.bar(thetas,height=pi[0,:], width=0.05, edgecolor='black', color='lightcyan', label='Prior')
+plt.bar(thetas, height=f, width=0.0005, edgecolor='black', color='blue', alpha = 0.6, label='Unconditional')
 plt.vlines(theta_ell, ymin=0, ymax=max(f), color='black', linestyles='dashed', label='True ' + r'$\theta$')
 plt.xlabel(r'$\theta$', fontsize=10)
 plt.ylabel('Probability', fontsize=10)
@@ -186,7 +269,7 @@ f = np.ones(n) / n # (n * (n+1) / 2) * np.arange(1,n+1)
 gamma = np.arange(1, 3, 0.5)
 p = 0.01
 
-theta = np.linspace(-0.0045, 0.006, n)
+thetas = np.linspace(-0.0045, 0.006, n)
 
 
 
