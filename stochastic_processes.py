@@ -31,6 +31,8 @@ class Stochastic:
                 Time interval
             T : float
                 Ending time
+            change : boolean
+                Returns the changes if set to true
             seed : integer
                 1 if a seed is set; 0 otherwise
 
@@ -43,14 +45,15 @@ class Stochastic:
             -------
             simulate : array [num_simuls, ]
                 Simulated values
-            sim_stats : string
     """
 
-    def __init__(self, x0=0.0, dt=0.1, T=100, seed=1):
+
+    def __init__(self, x0=0.0, dt=0.1, T=100, change=False, seed=1):
 
         self.x0 = x0
         self.dt = dt
         self.T = T
+        self.change = change
         self.seed = seed
         self.num_simuls = round(T/dt)
 
@@ -67,13 +70,15 @@ class BrownianMotion(Stochastic):
                 Time interval
             T : float
                 Ending time
+            change : boolean
+                Returns the changes if set to true
             seed : integer
                 1 if a seed is set; 0 otherwise
     """
 
-    def __init__(self, x0=0.0, dt=0.1, T=100, seed=1):
+    def __init__(self, x0=0.0, dt=0.1, T=100, change=False, seed=1):
 
-        super().__init__(x0, dt, T, seed)
+        super().__init__(x0, dt, T, change, seed)
 
     def simulate(self):
 
@@ -81,14 +86,26 @@ class BrownianMotion(Stochastic):
             np.random.seed(987654321)
 
         xt = self.x0
-        x_sim = np.array(xt)
+        dx_sim = []
+        x_sim = [xt]
 
         for i in range(self.num_simuls):
             dx = np.random.normal(0,1) * np.sqrt(self.dt)
             xt = xt + dx
-            x_sim = np.append(x_sim, xt)
+            dx_sim.append(dx)
+            x_sim.append(xt)
 
-        return x_sim
+        dx_sim.append(0.0)
+        dx_sim = np.array(dx_sim)
+        x_sim = np.array(x_sim)
+
+        if self.change:
+
+            return x_sim, dx_sim
+
+        else:
+
+            return x_sim
 
 class GeneralizedBrownianMotion(Stochastic):
 
@@ -106,6 +123,8 @@ class GeneralizedBrownianMotion(Stochastic):
                 Time interval
             T : float
                 Ending time
+            change : boolean
+                Returns the changes if set to true
             seed : integer
                 1 if a seed is set; 0 otherwise
     """

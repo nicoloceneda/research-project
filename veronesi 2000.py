@@ -22,7 +22,7 @@ from stochastic_processes import *
 # -------------------------------------------------------------------------------
 
 
-# Utility function
+# Function: utility function
 
 def utility(cons_, gamma_, delta_, t_):
 
@@ -81,12 +81,17 @@ T = 10
 # Drift
 
 thetas = np.linspace(-0.0045, 0.0065, 23)
+theta_ell = thetas[14]
 
 # Unconditional distribution
 
-freq = [1, 2, 4, 7, 11, 17, 23, 25, 27, 29, 30, 35, 30, 29, 27, 25, 23, 17, 11, 7, 4, 2, 1]
+freq = [1, 2, 4, 7, 11, 17, 23, 25, 27, 29, 30, 33, 30, 29, 27, 25, 23, 17, 11, 7, 4, 2, 1]
 f1 = (freq / np.sum(freq))
 f2 = np.full(n, 1) / n
+
+# Prior probability distribution
+
+pis = np.full(n, 1) / n
 
 # Probability of a change
 
@@ -99,13 +104,39 @@ sigma_e = 0.1
 h_D = 1 / sigma_D
 h_e = 1 / sigma_e
 
+# Plot unconditional and prior distributions
+
+plt.bar(thetas,height=pis, width=0.0005, edgecolor='black', color='lightcyan', label='Prior')
+plt.bar(thetas, height=f1, width=0.0005, edgecolor='black', color='blue', alpha = 0.6, label='Unconditional')
+plt.vlines(theta_ell, ymin=0, ymax=max(f1), color='black', linestyles='dashed')
+plt.text(theta_ell+0.0001, 0.08, r'$\theta_\ell$')
+plt.xlabel(r'$\theta$', fontsize=10)
+plt.ylabel('Probability', fontsize=10)
+plt.legend(loc='upper left', fontsize=10)
+plt.title('Probability distribution', fontsize=10)
+
+# Risky asset process
+
+dD_D = ItoProcess(x0=1, mu=0.15, sigma=0.3, dt=dt, T=T, seed=1)
+
+
+
+fig3, ax = plt.subplots(nrows=1, ncols=1)
+
+ax.plot(ip_sims, linewidth=0.5)
+ax.hlines(y=100, xmin=0, xmax=ip.num_simuls, linewidth=0.5, color='black')
+ax.set_title('Ito Process - $\mu$={:.1f}%, $\sigma$={:.1f}%'.format(ip.mu * ip.dt * 100, ip.sigma**2 * ip.dt * 100))
+ax.set_xlabel('t')
+ax.set_ylabel('$x_t$')
+ax.set_xlim(left=0, right=ip.num_simuls)
+fig3.tight_layout()
 
 # -------------------------------------------------------------------------------
 # EXPECTED DRIFT RATE
 # -------------------------------------------------------------------------------
 
 
-# Expected drift rate
+# Function: expected drift rate
 
 def m_theta(pis_):
 
@@ -119,6 +150,11 @@ def m_theta(pis_):
 # -------------------------------------------------------------------------------
 
 
+def dpi_1():
+
+    dBD_tilde = h_D * ()
+    dBe_tilde
+    dpi =
 
 
 
@@ -214,7 +250,7 @@ def mu_r():
 
     return mu
 
-theta_ell = thetas[14]
+
 
 
 # Posterior distribution
@@ -273,15 +309,7 @@ for t in range(int(T/dt)):
     print(min(dpi[t + 1, :]), max(dpi[t + 1, :]), sum(dpi[t + 1, :]))
     print(min(pi[t+1,:]), max(pi[t+1,:]), sum(pi[t+1,:]))
 
-# Plot unconditional and prior distributions
 
-plt.bar(thetas,height=pi[0,:], width=0.05, edgecolor='black', color='lightcyan', label='Prior')
-plt.bar(thetas, height=f, width=0.0005, edgecolor='black', color='blue', alpha = 0.6, label='Unconditional')
-plt.vlines(theta_ell, ymin=0, ymax=max(f), color='black', linestyles='dashed', label='True ' + r'$\theta$')
-plt.xlabel(r'$\theta$', fontsize=10)
-plt.ylabel('Probability', fontsize=10)
-plt.legend(loc='upper left', fontsize=10)
-plt.title('Probability distribution', fontsize=10)
 
 
 # Parameters
