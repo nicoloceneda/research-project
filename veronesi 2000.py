@@ -14,6 +14,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from stochastic_processes import *
 
 
 # -------------------------------------------------------------------------------
@@ -67,27 +68,61 @@ fig_1.savefig('images/fig_1.png')
 
 
 # -------------------------------------------------------------------------------
-# PARAMETERS
+# INVESTMENT OPPORTUNITY SET
 # -------------------------------------------------------------------------------
 
 
-# Drift
-
-thetas = np.arange(-0.0045, 0.0070, 0.0005)
-
 # Dimensions
 
-n = thetas.shape[0]
+n = 23
+dt = 0.001
+T = 10
+
+# Drift
+
+thetas = np.linspace(-0.0045, 0.0065, 23)
 
 # Unconditional distribution
 
-f = np.full(n, 1) / n
-#freq = [1, 2, 4, 7, 11, 17, 23, 25, 27, 29, 30, 35, 30, 29, 27, 25, 23, 17, 11, 7, 4, 2, 1]
-#f = (freq / np.sum(freq))
+freq = [1, 2, 4, 7, 11, 17, 23, 25, 27, 29, 30, 35, 30, 29, 27, 25, 23, 17, 11, 7, 4, 2, 1]
+f1 = (freq / np.sum(freq))
+f2 = np.full(n, 1) / n
 
 # Probability of a change
 
 p = 0.0167
+
+# Precision
+
+sigma_D = 0.015
+sigma_e = 0.1
+h_D = 1 / sigma_D
+h_e = 1 / sigma_e
+
+
+# -------------------------------------------------------------------------------
+# EXPECTED DRIFT RATE
+# -------------------------------------------------------------------------------
+
+
+# Expected drift rate
+
+def m_theta(pis_):
+
+    m_theta_ = np.sum(pis_ * thetas)
+
+    return m_theta_
+
+
+# -------------------------------------------------------------------------------
+# EVOLUTION OF INVESTORS BELIEFS
+# -------------------------------------------------------------------------------
+
+
+
+
+
+
 
 # Risk aversion
 
@@ -101,7 +136,6 @@ delta = 0.0033
 
 # Precision
 
-sigma_D = 0.015
 sigma_e = float('inf')
 sigma_theta = 0.0011
 sigmas_theta = np.arange(0, 0.0015, 0.0005)
@@ -163,14 +197,7 @@ fig_1.tight_layout()
 fig_1.savefig('images/fig_1.png')
 
 
-# -------------------------------------------------------------------------------
-# FUNCTION mu_R
-# -------------------------------------------------------------------------------
 
-
-def m_theta():
-
-    pi_star = pi
 
 # Function v_theta
 
@@ -189,8 +216,6 @@ def mu_r():
 
 theta_ell = thetas[14]
 
-dt = 0.001
-T = 10
 
 # Posterior distribution
 
@@ -204,9 +229,7 @@ pi[0, :] = np.full(n, 1/n).reshape(1, -1)
 
 
 
-sigma_e = 0.1
-h_D = 1 / sigma_D
-h_e = 1 / sigma_e
+
 k = h_D ** 2 + h_e ** 2
 
 # Stochastic differential equation (6)
@@ -271,16 +294,5 @@ p = 0.01
 
 thetas = np.linspace(-0.0045, 0.006, n)
 
-
-
-
-for g in gamma:
-
-    C_theta[g] = list(C(g))
-
-C_theta = pd.DataFrame(C_theta)
-
-C_theta.plot(kind='line')
-plt.legend(loc='upper right')
 
 

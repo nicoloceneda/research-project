@@ -10,6 +10,7 @@
 
 
 from stochastic_processes import *
+import matplotlib.pyplot as plt
 
 
 # -------------------------------------------------------------------------------
