@@ -92,12 +92,12 @@ theta_ell = thetas[14]
 # Unconditional distribution
 
 freq = [1, 2, 4, 7, 11, 17, 23, 25, 27, 29, 30, 33, 30, 29, 27, 25, 23, 17, 11, 7, 4, 2, 1]
-f1 = (freq / np.sum(freq))
-f2 = np.full(n, 1) / n
+f1 = np.reshape(freq / np.sum(freq), newshape=(1,-1))
+f2 = np.full(shape=(1, n), fill_value=1/n)
 
 # Prior probability distribution
 
-pis = np.full(n, 1) / n
+pis = np.full((1, n), 1) / n
 
 # Precision
 
@@ -110,7 +110,7 @@ h_e = 1 / sigma_e
 
 fig_2, ax = plt.subplots(nrows=1, ncols=1, figsize=(5.5, 4))
 
-plt.bar(thetas,height=pis, width=0.0005, edgecolor='black', color='lightcyan', label='Prior')
+plt.bar(thetas, height=pis, width=0.0005, edgecolor='black', color='lightcyan', label='Prior')
 plt.bar(thetas, height=f1, width=0.0005, edgecolor='black', color='blue', alpha = 0.6, label='Unconditional')
 plt.vlines(theta_ell, ymin=0, ymax=max(f1), color='black', linestyles='dashed')
 plt.text(theta_ell+0.0001, 0.08, r'$\theta_\ell$')
@@ -142,11 +142,13 @@ divid = ItoProcess(x0=1, mu=drift, sigma=sigma_D, dt=dt, T=T, change=True, seed=
 D_sim, dD_sim = divid.simulate()
 
 dDD_sim = dD_sim / D_sim
+dDD_sim = dDD_sim[:-1]
 
 # Signal
 
 signal = GeneralizedBrownianMotion(x0=1, mu=drift, sigma=sigma_e, dt=dt, T=T, change=True, seed=123456789)
 e_sim, de_sim = signal.simulate()
+de_sim = de_sim[:-1]
 
 # Plot simulated dDD
 
@@ -175,6 +177,87 @@ fig_3.savefig('images/fig_3.png')
 
 
 # -------------------------------------------------------------------------------
+# EXPECTED DRIFT RATE
+# -------------------------------------------------------------------------------
+
+
+# Function: expected drift rate
+
+def mtheta(pis_):
+
+    m_theta_ = np.sum(pis_ * thetas)
+
+    return m_theta_
+
+
+# -------------------------------------------------------------------------------
+# EVOLUTION OF INVESTORS BELIEFS
+# -------------------------------------------------------------------------------
+
+
+# Simulated the evolution of beliefs
+
+dpis_evo = np.zeros(shape=(periods, n))
+pis_evo = np.zeros(shape=(periods, n))
+pis_evo[0,:] = pis
+
+for t in range(periods-1):
+
+    m_theta = mtheta(pis_evo[t, :])
+    dBD_tilde = h_D * (dDD_sim[t] - m_theta * dt)
+    dBe_tilde = h_e * (de_sim[t] - m_theta * dt)
+    dpis_evo[t,:] = p * (f1 - pis_evo[t,:]) * dt + pis_evo[t,:] * (thetas - m_theta) * (h_D * dBD_tilde + h_e * dBe_tilde)
+    pis_evo[t+1,:] = pis_evo[t,:] + dpis_evo[t,:]
+
+# Plot the simulated evolution of beliefs
+
+ytick1 = [0.025, 0.02, 0.02, 0.03, 0.035, 0.049, 0.05, 0.05, 0.06, 0.065, 0.07, 0.07]
+ytick2 = [0.07, 0.075, 0.07, 0.06, 0.06, 0.055, 0.05, 0.04, 0.035, 0.02, 0.02]
+
+fig_4 = plt.figure(constrained_layout=True, figsize=(8, 8))
+
+gs = plt.GridSpec(12, 2, figure=fig_4)
+
+for row in range(12):
+    ax = fig_4.add_subplot(gs[row,0])
+    ax.plot(pis_evo[:, row], color='b', linewidth=0.6, label=r'$\pi_{}$'.format(row))
+    ax.tick_params(axis='both', labelsize='6')
+    plt.text(995, ytick1[row], '$\pi {}$'.format(row + 1), fontsize=6)
+
+for row in range(11):
+    ax = fig_4.add_subplot(gs[row,1])
+    ax.plot(pis_evo[:, 10 + row], color='b', linewidth=0.6, label=r'$\pi_{}$'.format(row))
+    ax.tick_params(axis='both', labelsize='6')
+    plt.text(995, ytick2[row], '$\pi {}$'.format(row + 13), fontsize=6)
+
+fig_4.suptitle("Evolution of Investors' Beliefs", fontsize=10)
+
+fig_4.savefig('images/fig_4.png')
+
+
+# -------------------------------------------------------------------------------
+# EVOLUTION OF INVESTORS BELIEFS
+# -------------------------------------------------------------------------------
+
+
+# Risk aversion
+
+gammas_g1 = [1.0, 1.5, 2.0, 2.5]
+gammas_s1 = [1.0, 0.5, 0.15, 0.0]
+gammas = np.arange(0, 5, 0.0005)
+
+#Discount rate
+
+delta = 0.0033
+
+# Precision
+
+sigma_e = float('inf')
+sigma_theta = 0.0011
+sigmas_theta = np.arange(0, 0.0015, 0.0005)
+
+
+# -------------------------------------------------------------------------------
 # GENERAL
 # -------------------------------------------------------------------------------
 
@@ -183,15 +266,7 @@ fig_3.savefig('images/fig_3.png')
 
 plt.show()
 
-# def dummy(x):
 
-#     if x==1:
-#         print('fail')
-
-#     return x+5
-
-# a = dummy(1)
-# print(a)
 
 # np.unique(drift)
 # np.ndim(drift) != 0 and np.size(drift, 0) == round(T/dt):
@@ -208,40 +283,9 @@ plt.show()
 # ax.set_xlim(left=0, right=ip.num_simuls)
 # fig3.tight_layout()
 
-# -------------------------------------------------------------------------------
-# EXPECTED DRIFT RATE
-# -------------------------------------------------------------------------------
 
 
-# Function: expected drift rate
 
-# def m_theta(pis_):
-
-#     m_theta_ = np.sum(pis_ * thetas)
-
-#     return m_theta_
-
-
-# -------------------------------------------------------------------------------
-# EVOLUTION OF INVESTORS BELIEFS
-# -------------------------------------------------------------------------------
-
-
-# Risk aversion
-
-# gammas_g1 = [1.0, 1.5, 2.0, 2.5]
-# gammas_s1 = [1.0, 0.5, 0.15, 0.0]
-# gammas = np.arange(0, 5, 0.0005)
-
-# Discount rate
-
-# delta = 0.0033
-
-# # Precision
-
-# sigma_e = float('inf')
-# sigma_theta = 0.0011
-# sigmas_theta = np.arange(0, 0.0015, 0.0005)
 
 # # -------------------------------------------------------------------------------
 # # FUNCTION C(THETA)
