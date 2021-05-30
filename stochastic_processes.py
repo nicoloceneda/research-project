@@ -34,7 +34,7 @@ class Stochastic:
             change : boolean
                 Returns the changes if set to true
             seed : integer
-                1 if a seed is set; 0 otherwise
+                True if a seed is set; False otherwise
 
             Attributes:
             ----------
@@ -48,7 +48,7 @@ class Stochastic:
     """
 
 
-    def __init__(self, x0=0.0, dt=0.1, T=100, change=False, seed=1):
+    def __init__(self, x0=0.0, dt=0.1, T=100, change=False, seed=True):
 
         self.x0 = x0
         self.dt = dt
@@ -73,16 +73,16 @@ class BrownianMotion(Stochastic):
             change : boolean
                 Returns the changes if set to true
             seed : integer
-                1 if a seed is set; 0 otherwise
+                True if a seed is set; False otherwise
     """
 
-    def __init__(self, x0=0.0, dt=0.1, T=100, change=False, seed=1):
+    def __init__(self, x0=0.0, dt=0.1, T=100, change=False, seed=True):
 
         super().__init__(x0, dt, T, change, seed)
 
     def simulate(self):
 
-        if self.seed == 1:
+        if self.seed:
             np.random.seed(987654321)
 
         xt = self.x0
@@ -126,18 +126,27 @@ class GeneralizedBrownianMotion(Stochastic):
             change : boolean
                 Returns the changes if set to true
             seed : integer
-                1 if a seed is set; 0 otherwise
+                True if a seed is set; False otherwise
     """
 
-    def __init__(self, mu=0.1, sigma=1.0, x0=0.0, dt=0.1, T=100, change=False, seed=1):
+    def __init__(self, mu=0.1, sigma=1.0, x0=0.0, dt=0.1, T=100, change=False, seed=True):
 
         super().__init__(x0, dt, T, change, seed)
         self.mu = mu
         self.sigma = sigma
 
+        if np.ndim(self.mu) == 0:
+            self.drift = np.full(self.num_simuls, self.mu)
+
+        if np.ndim(self.mu) != 0 and np.size(self.mu, 0) == self.num_simuls:
+            self.drift = self.mu
+
+        if np.ndim(self.mu) != 0 and np.size(self.mu, 0) != self.num_simuls:
+            print("The size of the vector array should be equal to T/dt")
+
     def simulate(self):
 
-        if self.seed == 1:
+        if self.seed:
             np.random.seed(987654321)
 
         xt = self.x0
@@ -145,7 +154,7 @@ class GeneralizedBrownianMotion(Stochastic):
         x_sim = [xt]
 
         for i in range(self.num_simuls):
-            dx = self.mu * self.dt + self.sigma * np.random.normal(0,1) * np.sqrt(self.dt)
+            dx = self.drift[i] * self.dt + self.sigma * np.random.normal(0,1) * np.sqrt(self.dt)
             xt = xt + dx
             dx_sim.append(dx)
             x_sim.append(xt)
@@ -181,17 +190,26 @@ class ItoProcess(Stochastic):
             change : boolean
                 Returns the changes if set to true
             seed : integer
-                1 if a seed is set; 0 otherwise
+                True if a seed is set; False otherwise
     """
 
-    def __init__(self, mu=0.15, sigma=0.3, x0=100, dt=0.02, T=100, change=False, seed=1):
+    def __init__(self, mu=0.15, sigma=0.3, x0=100, dt=0.02, T=100, change=False, seed=True):
 
         super().__init__(x0, dt, T, change, seed)
         self.mu = mu
         self.sigma = sigma
 
-        if self.x0 == 0:
+        if self.x0:
             print("x0 can't be zero")
+
+        if np.ndim(self.mu) == 0:
+            self.drift = np.full(self.num_simuls, self.mu)
+
+        if np.ndim(self.mu) != 0 and np.size(self.mu, 0) == self.num_simuls:
+            self.drift = self.mu
+
+        if np.ndim(self.mu) != 0 and np.size(self.mu, 0) != self.num_simuls:
+            print("The size of the vector array should be equal to T/dt")
 
     def simulate(self):
 
@@ -203,7 +221,7 @@ class ItoProcess(Stochastic):
         x_sim = [xt]
 
         for i in range(self.num_simuls):
-            dx = self.mu * xt * self.dt + self.sigma * xt * np.random.normal(0,1) * np.sqrt(self.dt)
+            dx = self.drift[i] * xt * self.dt + self.sigma * xt * np.random.normal(0,1) * np.sqrt(self.dt)
             xt = xt + dx
             dx_sim.append(dx)
             x_sim.append(xt)

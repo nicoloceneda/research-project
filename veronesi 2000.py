@@ -75,8 +75,13 @@ fig_1.savefig('images/fig_1.png')
 # Dimensions
 
 n = 23
-dt = 0.001
-T = 10
+dt = 1
+T = 1000
+periods = int(T/dt)
+
+# Probability of a change
+
+p = 0.50
 
 # Drift
 
@@ -92,10 +97,6 @@ f2 = np.full(n, 1) / n
 # Prior probability distribution
 
 pis = np.full(n, 1) / n
-
-# Probability of a change
-
-p = 0.0167
 
 # Precision
 
@@ -117,7 +118,22 @@ plt.title('Probability distribution', fontsize=10)
 
 # Risky asset process
 
-dD_D = ItoProcess(x0=1, mu=0.15, sigma=0.3, dt=dt, T=T, seed=1)
+drift = np.random.choice(a=thetas, size=1, p=f1)
+
+for t in range(periods-1):
+
+    if np.random.uniform(low=0.0, high=1.0) < p * dt:
+
+        drift = np.append(drift, np.random.choice(a=thetas, size=1, p=f1))
+
+    else:
+
+        drift = np.append(drift, drift[-1])
+
+divid = GeneralizedBrownianMotion(x0=1, mu=drift, sigma=sigma_D, dt=dt, T=T, change=False, seed=False)
+dDD = divid.num_simuls
+
+np.ndim(drift) != 0 and np.size(drift, 0) == round(T/dt):
 
 
 
