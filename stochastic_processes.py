@@ -19,7 +19,7 @@ import numpy as np
 
 # Design the brownian motion
 
-class Stochastic:
+class Stochastic(object):
 
     """ Stochastic Process
 
@@ -138,11 +138,11 @@ class GeneralizedBrownianMotion(Stochastic):
         if np.ndim(self.mu) == 0:
             self.drift = np.full(self.num_simuls, self.mu)
 
-        if np.ndim(self.mu) != 0 and np.size(self.mu, 0) == self.num_simuls:
+        elif np.ndim(self.mu) != 0 and np.size(self.mu, 0) == self.num_simuls:
             self.drift = self.mu
 
-        if np.ndim(self.mu) != 0 and np.size(self.mu, 0) != self.num_simuls:
-            print("The size of the vector array should be equal to T/dt")
+        elif np.ndim(self.mu) != 0 and np.size(self.mu, 0) != self.num_simuls:
+            print('The size of mu is {} should be equal to T/dt={}'.format(np.size(self.mu, 0), self.num_simuls))
 
     def simulate(self):
 
@@ -201,15 +201,6 @@ class ItoProcess(Stochastic):
 
         if self.x0:
             print("x0 can't be zero")
-
-        if np.ndim(self.mu) == 0:
-            self.drift = np.full(self.num_simuls, self.mu)
-
-        if np.ndim(self.mu) != 0 and np.size(self.mu, 0) == self.num_simuls:
-            self.drift = self.mu
-
-        if np.ndim(self.mu) != 0 and np.size(self.mu, 0) != self.num_simuls:
-            print("The size of the vector array should be equal to T/dt")
 
     def simulate(self):
 
