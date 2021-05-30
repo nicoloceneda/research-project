@@ -64,6 +64,7 @@ ax.set_xlabel('C', fontsize=10)
 ax.set_title('U(C) for varying $\gamma$',fontsize=10)
 ax.set_xlim(xmin=np.min(cons), xmax=np.max(cons))
 
+fig_1.tight_layout()
 fig_1.savefig('images/fig_1.png')
 
 
@@ -100,8 +101,8 @@ pis = np.full(n, 1) / n
 
 # Precision
 
-sigma_D = 0.015
-sigma_e = 0.1
+sigma_D = 0.10
+sigma_e = 0.15
 h_D = 1 / sigma_D
 h_e = 1 / sigma_e
 
@@ -118,9 +119,10 @@ plt.ylabel('Probability', fontsize=10)
 plt.legend(loc='upper left', fontsize=10)
 plt.title('Probability distribution', fontsize=10)
 
+fig_2.tight_layout()
 fig_2.savefig('images/fig_2.png')
 
-# Risky asset process
+# Stochastic drift
 
 drift = np.random.choice(a=thetas, size=1, p=f1)
 
@@ -134,19 +136,41 @@ for t in range(periods-1):
 
         drift = np.append(drift, drift[-1])
 
-divid = GeneralizedBrownianMotion(x0=1, mu=drift, sigma=sigma_D, dt=dt, T=T, change=False, seed=True)
-dDD = divid.simulate()
+# Risky asset
+
+divid = ItoProcess(x0=1, mu=drift, sigma=sigma_D, dt=dt, T=T, change=True, seed=987654321)
+D_sim, dD_sim = divid.simulate()
+
+dDD_sim = dD_sim / D_sim
+
+# Signal
+
+signal = GeneralizedBrownianMotion(x0=1, mu=drift, sigma=sigma_e, dt=dt, T=T, change=True, seed=123456789)
+e_sim, de_sim = signal.simulate()
 
 # Plot simulated dDD
 
-fig_3, ax = plt.subplots(nrows=1, ncols=1, figsize=(5.5, 4))
+fig_3, ax = plt.subplots(nrows=1, ncols=2, figsize=(11, 4))
 
-ax.plot(dDD, color='b')
-ax.set_ylabel(r'$\frac{dD}{D}$', fontsize=10)
-ax.set_xlabel('t', fontsize=10)
-ax.set_title(r'$\frac{dD}{D}=\theta dt + \sigma_D dB_D$', fontsize=10)
-ax.set_xlim(xmin=0, xmax=periods)
+ax[0].plot(D_sim, color='b', label='Dividend')
+ax[0].plot(e_sim, color='r', label='Signal')
+ax[0].hlines(y=0, xmin=0, xmax=periods, color='black', linestyles='dashed')
+ax[0].set_ylabel(r'$D$' + ' and ' + r'$e$', fontsize=10)
+ax[0].set_xlabel('t', fontsize=10)
+ax[0].set_title(r'$D(t+1)=D(t) + dD(t)$' + ' and ' + r'$e(t+1)=e(t) + de(t)$', fontsize=10)
+ax[0].legend(loc='upper left', fontsize=10)
+ax[0].set_xlim(xmin=0, xmax=periods)
 
+ax[1].plot(dDD_sim, color='b', label='Dividend', zorder=5)
+ax[1].plot(de_sim, color='r', label='Signal', zorder=0)
+ax[1].hlines(y=0, xmin=0, xmax=periods, color='black', linestyles='dashed', zorder=10)
+ax[1].set_ylabel(r'$\frac{dD}{D}$' + ' and ' + r'$de$', fontsize=10)
+ax[1].set_xlabel('t', fontsize=10)
+ax[1].set_title(r'$\frac{dD}{D}=\theta dt + \sigma_D dB_D$' + ' and ' + r'$de=\theta dt + \sigma_e dB_e$', fontsize=10)
+ax[1].legend(loc='upper left', fontsize=10)
+ax[1].set_xlim(xmin=0, xmax=periods)
+
+fig_3.tight_layout()
 fig_3.savefig('images/fig_3.png')
 
 

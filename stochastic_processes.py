@@ -48,7 +48,7 @@ class Stochastic(object):
     """
 
 
-    def __init__(self, x0=0.0, dt=0.1, T=100, change=False, seed=True):
+    def __init__(self, x0=0.0, dt=0.1, T=100, change=False, seed=987654321):
 
         self.x0 = x0
         self.dt = dt
@@ -76,14 +76,14 @@ class BrownianMotion(Stochastic):
                 True if a seed is set; False otherwise
     """
 
-    def __init__(self, x0=0.0, dt=0.1, T=100, change=False, seed=True):
+    def __init__(self, x0=0.0, dt=0.1, T=100, change=False, seed=987654321):
 
         super().__init__(x0, dt, T, change, seed)
 
     def simulate(self):
 
-        if self.seed:
-            np.random.seed(987654321)
+        if self.seed != 0:
+            np.random.seed(self.seed)
 
         xt = self.x0
         dx_sim = []
@@ -113,8 +113,8 @@ class GeneralizedBrownianMotion(Stochastic):
 
             Parameters:
             ----------
-            mu : float
-                drift rate
+            mu : scalar or array, shape = [n_simuls, ]
+                constant (scalar) or time varying (array) drift rate
             sigma : float
                 variance rate
             x0 : float
@@ -129,7 +129,7 @@ class GeneralizedBrownianMotion(Stochastic):
                 True if a seed is set; False otherwise
     """
 
-    def __init__(self, mu=0.1, sigma=1.0, x0=0.0, dt=0.1, T=100, change=False, seed=True):
+    def __init__(self, mu=0.1, sigma=1.0, x0=0.0, dt=0.1, T=100, change=False, seed=987654321):
 
         super().__init__(x0, dt, T, change, seed)
         self.mu = mu
@@ -146,8 +146,8 @@ class GeneralizedBrownianMotion(Stochastic):
 
     def simulate(self):
 
-        if self.seed:
-            np.random.seed(987654321)
+        if self.seed != 0:
+            np.random.seed(self.seed)
 
         xt = self.x0
         dx_sim = []
@@ -177,8 +177,8 @@ class ItoProcess(Stochastic):
 
             Parameters:
             ----------
-            mu : float
-                drift rate
+            mu : scalar or array, shape = [n_simuls, ]
+                constant (scalar) or time varying (array) drift rate
             sigma : float
                 variance rate
             x0 : float
@@ -193,19 +193,28 @@ class ItoProcess(Stochastic):
                 True if a seed is set; False otherwise
     """
 
-    def __init__(self, mu=0.15, sigma=0.3, x0=100, dt=0.02, T=100, change=False, seed=True):
+    def __init__(self, mu=0.15, sigma=0.3, x0=100, dt=0.02, T=100, change=False, seed=987654321):
 
         super().__init__(x0, dt, T, change, seed)
         self.mu = mu
         self.sigma = sigma
 
-        if self.x0:
+        if np.ndim(self.mu) == 0:
+            self.drift = np.full(self.num_simuls, self.mu)
+
+        elif np.ndim(self.mu) != 0 and np.size(self.mu, 0) == self.num_simuls:
+            self.drift = self.mu
+
+        elif np.ndim(self.mu) != 0 and np.size(self.mu, 0) != self.num_simuls:
+            print('The size of mu is {} should be equal to T/dt={}'.format(np.size(self.mu, 0), self.num_simuls))
+
+        if self.x0 == 0:
             print("x0 can't be zero")
 
     def simulate(self):
 
-        if self.seed == 1:
-            np.random.seed(987654321)
+        if self.seed != 0:
+            np.random.seed(self.seed)
 
         xt = self.x0
         dx_sim = []
