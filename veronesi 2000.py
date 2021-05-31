@@ -271,53 +271,33 @@ ax.set_xlim(xmin=0, xmax=periods)
 fig_5.tight_layout()
 fig_5.savefig('images/fig_5.png')
 
-# Simulated the evolution of beliefs
+# Re-simulate the risky asset
 
-dpis_evo_2 = np.zeros(shape=(periods, n))
-pis_evo_2 = np.zeros(shape=(periods, n))
-pis_evo_2[0,:] = pis
-
-for t in range(periods-1):
-
-    m_theta_2 = mtheta(pis_evo_2[t, :])
-    dBD = (dDD_sim[t] - drift[t] * dt) / sigma_D
-    dBe = (de_sim[t] - drift[t] * dt) / sigma_e
-    dpis_evo_2[t,:] = (p * (f1 - pis_evo_2[t,:]) + k * pis_evo_2[t,:] * (thetas - m_theta_2) * (theta_ell[t] - m_theta_2)) * dt + \
-                       pis_evo_2[t,:] * (thetas - m_theta_2) * (h_D * dBD + h_e * dBe)
-    pis_evo_2[t+1,:] = pis_evo_2[t,:] + dpis_evo_2[t,:]
-
-################################# DELETE #################################
-
-divid = ItoProcess(x0=1, mu=0.006, sigma=sigma_D, dt=dt, T=T, change=True, seed=987654321)
+divid = ItoProcess(x0=1, mu=theta_ell, sigma=sigma_D, dt=dt, T=T, change=True, seed=987654321)
 D_sim, dD_sim = divid.simulate()
 dDD_sim = dD_sim / D_sim
 dDD_sim = dDD_sim[:-1]
 
-signal = GeneralizedBrownianMotion(x0=1, mu=0.006, sigma=sigma_e, dt=dt, T=T, change=True, seed=123456789)
+# Re-simulate the signal
+
+signal = GeneralizedBrownianMotion(x0=1, mu=theta_ell, sigma=sigma_e, dt=dt, T=T, change=True, seed=123456789)
 e_sim, de_sim = signal.simulate()
 de_sim = de_sim[:-1]
 
+# Simulated the evolution of beliefs
+
 dpis_evo_2 = np.zeros(shape=(periods, n))
 pis_evo_2 = np.zeros(shape=(periods, n))
-pis_evo_2[0,:] = pis
-comp_1 = np.zeros(shape=(periods, n))
-comp_2 = np.zeros(shape=(periods, n))
-comp_12 = np.zeros(shape=(periods, n))
+pis_evo_2[0, :] = pis
 
 for t in range(periods-1):
 
     m_theta_2 = mtheta(pis_evo_2[t, :])
-    dBD = h_D * (dDD_sim[t] - 0.006 * dt)
-    dBe = h_e * (de_sim[t] - 0.006 * dt)
-    dpis_evo_2[t,:] = (p * (f1 - pis_evo_2[t,:]) + k * pis_evo_2[t,:] * (thetas - m_theta_2) * (0.006 - m_theta_2)) * dt + \
+    dBD = h_D * (dDD_sim[t] - theta_ell[t] * dt)
+    dBe = h_e * (de_sim[t] - theta_ell[t] * dt)
+    dpis_evo_2[t,:] = (p * (f1 - pis_evo_2[t,:]) + k * pis_evo_2[t,:] * (thetas - m_theta_2) * (theta_ell[t] - m_theta_2)) * dt + \
                        pis_evo_2[t,:] * (thetas - m_theta_2) * (h_D * dBD + h_e * dBe)
     pis_evo_2[t+1,:] = pis_evo_2[t,:] + dpis_evo_2[t,:]
-
-    comp_1[t,:] = p * (f1 - pis_evo_2[t,:])
-    comp_2[t,:] = k * pis_evo_2[t, :] * (thetas - m_theta_2) * (0.006 - m_theta_2)
-    comp_12[t,:] = p * (f1 - pis_evo_2[t,:]) + k * pis_evo_2[t,:] * (thetas - m_theta_2) * (0.006 - m_theta_2)
-
-##########################################################################
 
 # Plot the simulated evolution of beliefs
 
@@ -346,43 +326,15 @@ fig_6.suptitle("Evolution of Investors' Beliefs - True Drift Rate Known", fontsi
 
 fig_6.savefig('images/fig_6.png')
 
-# Detailed analysis
-
-theta_ell_spec = np.unique(theta_ell[200:300])
-theta_spec = list(thetas).index(theta_ell_spec)
-
-a = np.array([1,2,3,4,4,4,5,6,4,4,4])
-
-
-fig_7, ax = plt.subplots(nrows=1, ncols=2, figsize=(11, 4))
-
-ax[0].plot(pis_evo_2[200:300, theta_spec], color='b', label='Dividend')
-ax[0].plot(pis_evo_1[200:300, theta_spec], color='r', label='Dividend')
-ax[1].plot(pis_evo_2[200:300, 18], color='b', label='Dividend', zorder=5)
+# -------------------------------------------------------------------------------
+# PARAMETERS P AND K
+# -------------------------------------------------------------------------------
 
 
 
 
-ax[0].hlines(y=0, xmin=0, xmax=periods, color='black', linestyles='dashed')
 
-ax[0].hlines(y=1, xmin=0, xmax=periods, color='black', linestyles='dashed')
-ax[0].set_ylabel(r'$D$' + ' and ' + r'$e$', fontsize=10)
-ax[0].set_xlabel('t', fontsize=10)
-ax[0].set_title(r'$D(t+1)=D(t) + dD(t)$' + ' and ' + r'$e(t+1)=e(t) + de(t)$', fontsize=10)
-ax[0].legend(loc='upper left', fontsize=10)
-ax[0].set_xlim(xmin=0, xmax=periods)
 
-ax[1].plot(pis_evo_2[:, 18], color='r', label='Dividend', zorder=5)
-ax[1].plot(de_sim, color='r', label='Signal', zorder=0)
-ax[1].hlines(y=0, xmin=0, xmax=periods, color='black', linestyles='dashed', zorder=10)
-ax[1].set_ylabel(r'$\frac{dD}{D}$' + ' and ' + r'$de$', fontsize=10)
-ax[1].set_xlabel('t', fontsize=10)
-ax[1].set_title(r'$\frac{dD}{D}=\theta dt + \sigma_D dB_D$' + ' and ' + r'$de=\theta dt + \sigma_e dB_e$', fontsize=10)
-ax[1].legend(loc='upper left', fontsize=10)
-ax[1].set_xlim(xmin=0, xmax=periods)
-
-fig_7.tight_layout()
-fig_7.savefig('images/fig_7.png')
 
 
 
@@ -544,17 +496,6 @@ plt.show()
 #     print(min(pi[t+1,:]), max(pi[t+1,:]), sum(pi[t+1,:]))
 
 
-
-
-# Parameters
-
-# n = 100
-# f = np.ones(n) / n # (n * (n+1) / 2) * np.arange(1,n+1)
-
-# gamma = np.arange(1, 3, 0.5)
-# p = 0.01
-
-# thetas = np.linspace(-0.0045, 0.006, n)
 
 
 
