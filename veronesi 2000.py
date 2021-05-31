@@ -273,16 +273,16 @@ fig_5.savefig('images/fig_5.png')
 
 # Re-simulate the risky asset
 
-divid = ItoProcess(x0=1, mu=theta_ell, sigma=sigma_D, dt=dt, T=T, change=True, seed=987654321)
-D_sim, dD_sim = divid.simulate()
-dDD_sim = dD_sim / D_sim
-dDD_sim = dDD_sim[:-1]
+divid_2 = ItoProcess(x0=1, mu=theta_ell, sigma=sigma_D, dt=dt, T=T, change=True, seed=987654321)
+D_sim_2, dD_sim_2 = divid_2.simulate()
+dDD_sim_2 = dD_sim_2 / D_sim_2
+dDD_sim_2 = dDD_sim_2[:-1]
 
 # Re-simulate the signal
 
-signal = GeneralizedBrownianMotion(x0=1, mu=theta_ell, sigma=sigma_e, dt=dt, T=T, change=True, seed=123456789)
-e_sim, de_sim = signal.simulate()
-de_sim = de_sim[:-1]
+signal_2 = GeneralizedBrownianMotion(x0=1, mu=theta_ell, sigma=sigma_e, dt=dt, T=T, change=True, seed=123456789)
+e_sim_2, de_sim_2 = signal_2.simulate()
+de_sim_2 = de_sim_2[:-1]
 
 # Simulated the evolution of beliefs
 
@@ -293,8 +293,8 @@ pis_evo_2[0, :] = pis
 for t in range(periods-1):
 
     m_theta_2 = mtheta(pis_evo_2[t, :])
-    dBD = h_D * (dDD_sim[t] - theta_ell[t] * dt)
-    dBe = h_e * (de_sim[t] - theta_ell[t] * dt)
+    dBD = h_D * (dDD_sim_2[t] - theta_ell[t] * dt)
+    dBe = h_e * (de_sim_2[t] - theta_ell[t] * dt)
     dpis_evo_2[t,:] = (p * (f1 - pis_evo_2[t,:]) + k * pis_evo_2[t,:] * (thetas - m_theta_2) * (theta_ell[t] - m_theta_2)) * dt + \
                        pis_evo_2[t,:] * (thetas - m_theta_2) * (h_D * dBD + h_e * dBe)
     pis_evo_2[t+1,:] = pis_evo_2[t,:] + dpis_evo_2[t,:]
@@ -327,34 +327,102 @@ fig_6.suptitle("Evolution of Investors' Beliefs - True Drift Rate Known", fontsi
 fig_6.savefig('images/fig_6.png')
 
 # -------------------------------------------------------------------------------
-# PARAMETERS P AND K
+# FUNCTION C(THETA)
 # -------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
 
 
 # Risk aversion
 
 gammas_g1 = [1.0, 1.5, 2.0, 2.5]
 gammas_s1 = [1.0, 0.5, 0.15, 0.0]
-gammas = np.arange(0, 5, 0.0005)
 
-#Discount rate
+# Discount rate
 
 delta = 0.0033
+p = 0.0167
+sigma_D = 0.015 #  # sigma_D = 0.10
 
-# Precision
+# Function: constant K
 
-sigma_e = float('inf')
-sigma_theta = 0.0011
-sigmas_theta = np.arange(0, 0.0015, 0.0005)
+def kappa(gamma_):
+
+    k = 0
+
+    for i in range(n):
+
+        k += f1[0,i] / (p + delta + (gamma_ - 1) * thetas[i] - 0.5 * gamma_ * (gamma_ - 1) * sigma_D ** 2)
+
+    return k
+
+# Function: C(theta)
+
+def Ctheta(gamma_):
+
+    c = 1 / ((p + delta + (gamma_ - 1) * thetas - 0.5 * gamma_ * (gamma_ - 1) * sigma_D ** 2) * (1 - p * kappa(gamma_)))
+
+    return c
+
+# Calculate values of C(theta)
+
+C_theta_g1 = pd.DataFrame(columns=gammas_g1)
+C_theta_s1 = pd.DataFrame(columns=gammas_s1)
+
+for g_g1, g_s1 in zip(gammas_g1, gammas_s1):
+
+    C_theta_g1.loc[:, g_g1] = Ctheta(g_g1)
+    C_theta_s1.loc[:, g_s1] = Ctheta(g_s1)
+
+# Plot figure
+
+fig_t1, ax = plt.subplots(nrows=1, ncols=2, figsize=(11, 4))
+
+ax[0].plot(thetas, C_theta_g1, label=['$\gamma$=1.0', '$\gamma$=1.5', '$\gamma$=2.0', '$\gamma$=2.5'])
+ax[0].legend(fontsize=8, loc='upper right')
+ax[0].set_ylabel('C($\Theta$)', fontsize=10)
+ax[0].set_xlabel('$\Theta$', fontsize=10)
+ax[0].set_title('C($\Theta$) for $\gamma > 1$',fontsize=10)
+ax[0].set_xlim(xmin=np.min(thetas), xmax=np.max(thetas))
+
+ax[1].plot(thetas, C_theta_s1, label=['$\gamma$=1.0', '$\gamma$=0.5', '$\gamma$=0.15', '$\gamma$=0.0'])
+ax[1].legend(fontsize=8, loc='upper left')
+ax[1].set_ylabel('C($\Theta$)', fontsize=10)
+ax[1].set_xlabel('$\Theta$', fontsize=10)
+ax[1].set_title('C($\Theta$) for $\gamma < 1$',fontsize=10)
+ax[1].set_xlim(xmin=np.min(thetas), xmax=np.max(thetas))
+
+fig_t1.tight_layout()
+fig_t1.savefig('images/fig_t1.png')
+
+#################### DELETE ###############################
+
+
+C_theta_g2 = pd.DataFrame(columns=[0.01, 0.04, 0.06, 0.08, 0.12])
+
+for sigma_D in [0.01, 0.04, 0.06, 0.08, 0.12]:
+
+    def kappa2(gamma_):
+        k = 0
+        for i in range(n):
+            k += f1[0, i] / (p + delta + (gamma_ - 1) * thetas[i] - 0.5 * gamma_ * (gamma_ - 1) * sigma_D ** 2)
+        return k
+
+
+    def Ctheta2(gamma_):
+        c = 1 / ((p + delta + (gamma_ - 1) * thetas - 0.5 * gamma_ * (gamma_ - 1) * sigma_D ** 2) * (1 - p * kappa2(gamma_)))
+        return c
+
+    C_theta_g2.loc[:, sigma_D] = Ctheta2(2.5)
+
+# Plot figure
+
+fig_t1, ax = plt.subplots(nrows=1, ncols=1, figsize=(11, 4))
+
+ax.plot(thetas, C_theta_g2, label=['sigma_D=0.01', 'sigma_D=0.04', 'sigma_D=0.06', 'sigma_D=0.08', 'sigma_D=0.12'])
+ax.legend(fontsize=8, loc='upper right')
+ax.set_ylabel('C($\Theta$)', fontsize=10)
+ax.set_xlabel('$\Theta$', fontsize=10)
+ax.set_title('C($\Theta$) for $\gamma > 1$',fontsize=10)
+ax.set_xlim(xmin=np.min(thetas), xmax=np.max(thetas))
 
 
 # -------------------------------------------------------------------------------
@@ -380,77 +448,6 @@ plt.show()
 # ax.set_ylabel('$x_t$')
 # ax.set_xlim(left=0, right=ip.num_simuls)
 # fig3.tight_layout()
-
-
-
-
-
-# # -------------------------------------------------------------------------------
-# # FUNCTION C(THETA)
-# # -------------------------------------------------------------------------------
-
-
-# # Function for the constant
-
-# def kappa(gamma_f):
-
-#     k = 0
-
-#     for i in range(n):
-
-#         k += f[i] / (delta + p + (gamma_f-1) * thetas[i] + 0.5 * gamma_f * (1-gamma_f) * sigma_D ** 2)
-
-#     return k
-
-# Function C(thetas)
-
-# def C_theta(gamma_f):
-
-#     c = 1 / ((delta + p + (gamma_f-1) * thetas + 0.5 * gamma_f * (1-gamma_f) * sigma_D ** 2) * (1 - p * kappa(gamma_f)))
-
-#     return c
-
-# # Simulations
-
-# C_theta_g1 = pd.DataFrame(columns=gammas_g1)
-# C_theta_s1 = pd.DataFrame(columns=gammas_s1)
-
-# for g_g1, g_s1 in zip(gammas_g1, gammas_s1):
-
-#     C_theta_g1.loc[:, g_g1] = C_theta(g_g1)
-#     C_theta_s1.loc[:, g_s1] = C_theta(g_s1)
-
-# # Plot figure
-
-# fig_1, ax = plt.subplots(nrows=1, ncols=2, figsize=(11, 4))
-
-# ax[0].plot(thetas, C_theta_g1, label=['$\gamma$=1.0', '$\gamma$=1.5', '$\gamma$=2.0', '$\gamma$=2.5'])
-# ax[0].legend(fontsize=8, loc='upper right')
-# ax[0].set_ylabel('C($\Theta$)', fontsize=10)
-# ax[0].set_xlabel('$\Theta$', fontsize=10)
-# ax[0].set_title('C($\Theta$) for $\gamma > 1$',fontsize=10)
-# ax[0].set_xlim(xmin=np.min(thetas), xmax=np.max(thetas))
-
-# ax[1].plot(thetas, C_theta_s1, label=['$\gamma$=1.0', '$\gamma$=0.5', '$\gamma$=0.15', '$\gamma$=0.0'])
-# ax[1].legend(fontsize=8, loc='upper left')
-# ax[1].set_ylabel('C($\Theta$)', fontsize=10)
-# ax[1].set_xlabel('$\Theta$', fontsize=10)
-# ax[1].set_title('C($\Theta$) for $\gamma < 1$',fontsize=10)
-# ax[1].set_xlim(xmin=np.min(thetas), xmax=np.max(thetas))
-
-# fig_1.tight_layout()
-# fig_1.savefig('images/fig_1.png')
-
-
-# # Posterior distribution
-
-# dlog_pi = np.zeros((T, n))
-# log_pi = np.zeros((T, n))
-
-# dpi = np.zeros((T, n))
-# pi = np.zeros((T, n))
-# pi[0, :] = np.full(n, 1/n).reshape(1, -1)
-
 
 
 
