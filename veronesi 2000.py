@@ -104,6 +104,7 @@ sigma_D = 0.10
 sigma_e = 0.15
 h_D = 1 / sigma_D
 h_e = 1 / sigma_e
+k = h_D ** 2 + h_e ** 2
 
 # Plot unconditional and prior distributions
 
@@ -121,13 +122,13 @@ fig_2.savefig('images/fig_2.png')
 
 # Stochastic drift
 
-drift = np.random.choice(a=thetas, size=1, p=f1)
+drift = np.random.choice(a=thetas, size=1, p=f1.reshape(-1))
 
 for t in range(periods-1):
 
     if np.random.uniform(low=0.0, high=1.0) < p * dt:
 
-        drift = np.append(drift, np.random.choice(a=thetas, size=1, p=f1))
+        drift = np.append(drift, np.random.choice(a=thetas, size=1, p=f1.reshape(-1)))
 
     else:
 
@@ -194,17 +195,17 @@ def mtheta(pis_):
 
 # Simulated the evolution of beliefs
 
-dpis_evo = np.zeros(shape=(periods, n))
-pis_evo = np.zeros(shape=(periods, n))
-pis_evo[0,:] = pis
+dpis_evo_1 = np.zeros(shape=(periods, n))
+pis_evo_1 = np.zeros(shape=(periods, n))
+pis_evo_1[0,:] = pis
 
 for t in range(periods-1):
 
-    m_theta = mtheta(pis_evo[t, :])
-    dBD_tilde = h_D * (dDD_sim[t] - m_theta * dt)
-    dBe_tilde = h_e * (de_sim[t] - m_theta * dt)
-    dpis_evo[t,:] = p * (f1 - pis_evo[t,:]) * dt + pis_evo[t,:] * (thetas - m_theta) * (h_D * dBD_tilde + h_e * dBe_tilde)
-    pis_evo[t+1,:] = pis_evo[t,:] + dpis_evo[t,:]
+    m_theta_1 = mtheta(pis_evo_1[t, :])
+    dBD_tilde = h_D * (dDD_sim[t] - m_theta_1 * dt)
+    dBe_tilde = h_e * (de_sim[t] - m_theta_1 * dt)
+    dpis_evo_1[t,:] = p * (f1 - pis_evo_1[t,:]) * dt + pis_evo_1[t,:] * (thetas - m_theta_1) * (h_D * dBD_tilde + h_e * dBe_tilde)
+    pis_evo_1[t+1,:] = pis_evo_1[t,:] + dpis_evo_1[t,:]
 
 # Plot the simulated evolution of beliefs
 
@@ -224,10 +225,10 @@ for i in range(23):
         row -= 12
 
     ax = fig_4.add_subplot(gs[row, col])
-    ax.plot(pis_evo[:, i], color='b', linewidth=0.6, zorder=5)
+    ax.plot(pis_evo_1[:, i], color='b', linewidth=0.6, zorder=5)
     ax.hlines(y=f1[0, i], xmin=0, xmax=periods, color='r', linestyles='dashed', linewidth=0.6, zorder=10)
     ax.tick_params(axis='both', labelsize='6')
-    plt.text(995, (np.max(pis_evo[:, i]) + np.min(pis_evo[:, i]))/2, '$\pi {}$'.format(i + 1), fontsize=6)
+    plt.text(995, (np.max(pis_evo_1[:, i]) + np.min(pis_evo_1[:, i]))/2, '$\pi {}$'.format(i + 1), fontsize=6)
 
 fig_4.suptitle("Evolution of Investors' Beliefs", fontsize=10)
 
@@ -252,24 +253,137 @@ for i in range(4):
 
 # Plot the evolution of the known drift
 
-# Plot utility function
-
 fig_5, ax = plt.subplots(nrows=1, ncols=1, figsize=(5.5, 4))
 
 ax.plot(theta_ell, color='b')
 ax.hlines(y=0, xmin=0, xmax=periods, color='black', linestyles='dashed')
-plt.text(4.4, 4.9, '$\gamma$=0.0')
-plt.text(4.4, 3.9, '$\gamma$=0.5')
-plt.text(4.4, 1.1, '$\gamma$=1.0')
-plt.text(4.4, -0.7, '$\gamma$=1.5')
-plt.text(4.4, -1.4, '$\gamma$=2.0')
-ax.set_ylabel('U(C)', fontsize=10)
-ax.set_xlabel('C', fontsize=10)
-ax.set_title('U(C) for varying $\gamma$',fontsize=10)
-ax.set_xlim(xmin=np.min(cons), xmax=np.max(cons))
 
-fig_1.tight_layout()
-fig_1.savefig('images/fig_1.png')
+for i in range(10):
+
+    loc = 100 * i
+    plt.text(loc+15, theta_ell[loc]+0.0001, '{:.4f}'.format(theta_ell[loc]), fontsize=6)
+
+ax.set_ylabel(r'$\theta_\ell$', fontsize=10)
+ax.set_xlabel('t', fontsize=10)
+ax.set_title('Evolution of ' + r'$\theta_\ell$',fontsize=10)
+ax.set_xlim(xmin=0, xmax=periods)
+
+fig_5.tight_layout()
+fig_5.savefig('images/fig_5.png')
+
+# Simulated the evolution of beliefs
+
+dpis_evo_2 = np.zeros(shape=(periods, n))
+pis_evo_2 = np.zeros(shape=(periods, n))
+pis_evo_2[0,:] = pis
+
+for t in range(periods-1):
+
+    m_theta_2 = mtheta(pis_evo_2[t, :])
+    dBD = (dDD_sim[t] - drift[t] * dt) / sigma_D
+    dBe = (de_sim[t] - drift[t] * dt) / sigma_e
+    dpis_evo_2[t,:] = (p * (f1 - pis_evo_2[t,:]) + k * pis_evo_2[t,:] * (thetas - m_theta_2) * (theta_ell[t] - m_theta_2)) * dt + \
+                       pis_evo_2[t,:] * (thetas - m_theta_2) * (h_D * dBD + h_e * dBe)
+    pis_evo_2[t+1,:] = pis_evo_2[t,:] + dpis_evo_2[t,:]
+
+################################# DELETE #################################
+
+divid = ItoProcess(x0=1, mu=0.006, sigma=sigma_D, dt=dt, T=T, change=True, seed=987654321)
+D_sim, dD_sim = divid.simulate()
+dDD_sim = dD_sim / D_sim
+dDD_sim = dDD_sim[:-1]
+
+signal = GeneralizedBrownianMotion(x0=1, mu=0.006, sigma=sigma_e, dt=dt, T=T, change=True, seed=123456789)
+e_sim, de_sim = signal.simulate()
+de_sim = de_sim[:-1]
+
+dpis_evo_2 = np.zeros(shape=(periods, n))
+pis_evo_2 = np.zeros(shape=(periods, n))
+pis_evo_2[0,:] = pis
+comp_1 = np.zeros(shape=(periods, n))
+comp_2 = np.zeros(shape=(periods, n))
+comp_12 = np.zeros(shape=(periods, n))
+
+for t in range(periods-1):
+
+    m_theta_2 = mtheta(pis_evo_2[t, :])
+    dBD = h_D * (dDD_sim[t] - 0.006 * dt)
+    dBe = h_e * (de_sim[t] - 0.006 * dt)
+    dpis_evo_2[t,:] = (p * (f1 - pis_evo_2[t,:]) + k * pis_evo_2[t,:] * (thetas - m_theta_2) * (0.006 - m_theta_2)) * dt + \
+                       pis_evo_2[t,:] * (thetas - m_theta_2) * (h_D * dBD + h_e * dBe)
+    pis_evo_2[t+1,:] = pis_evo_2[t,:] + dpis_evo_2[t,:]
+
+    comp_1[t,:] = p * (f1 - pis_evo_2[t,:])
+    comp_2[t,:] = k * pis_evo_2[t, :] * (thetas - m_theta_2) * (0.006 - m_theta_2)
+    comp_12[t,:] = p * (f1 - pis_evo_2[t,:]) + k * pis_evo_2[t,:] * (thetas - m_theta_2) * (0.006 - m_theta_2)
+
+##########################################################################
+
+# Plot the simulated evolution of beliefs
+
+fig_6 = plt.figure(constrained_layout=True, figsize=(8, 8))
+
+gs = plt.GridSpec(12, 2, figure=fig_6)
+
+col = 0
+row = 0
+
+for i in range(23):
+
+    row = i
+
+    if row > 11:
+        col = 1
+        row -= 12
+
+    ax = fig_6.add_subplot(gs[row, col])
+    ax.plot(pis_evo_2[:, i], color='b', linewidth=0.6, zorder=5)
+    ax.hlines(y=f1[0, i], xmin=0, xmax=periods, color='r', linestyles='dashed', linewidth=0.6, zorder=10)
+    ax.tick_params(axis='both', labelsize='6')
+    plt.text(995, (np.max(pis_evo_2[:, i]) + np.min(pis_evo_2[:, i]))/2, '$\pi {}$'.format(i + 1), fontsize=6)
+
+fig_6.suptitle("Evolution of Investors' Beliefs - True Drift Rate Known", fontsize=10)
+
+fig_6.savefig('images/fig_6.png')
+
+# Detailed analysis
+
+theta_ell_spec = np.unique(theta_ell[200:300])
+theta_spec = list(thetas).index(theta_ell_spec)
+
+a = np.array([1,2,3,4,4,4,5,6,4,4,4])
+
+
+fig_7, ax = plt.subplots(nrows=1, ncols=2, figsize=(11, 4))
+
+ax[0].plot(pis_evo_2[200:300, theta_spec], color='b', label='Dividend')
+ax[0].plot(pis_evo_1[200:300, theta_spec], color='r', label='Dividend')
+ax[1].plot(pis_evo_2[200:300, 18], color='b', label='Dividend', zorder=5)
+
+
+
+
+ax[0].hlines(y=0, xmin=0, xmax=periods, color='black', linestyles='dashed')
+
+ax[0].hlines(y=1, xmin=0, xmax=periods, color='black', linestyles='dashed')
+ax[0].set_ylabel(r'$D$' + ' and ' + r'$e$', fontsize=10)
+ax[0].set_xlabel('t', fontsize=10)
+ax[0].set_title(r'$D(t+1)=D(t) + dD(t)$' + ' and ' + r'$e(t+1)=e(t) + de(t)$', fontsize=10)
+ax[0].legend(loc='upper left', fontsize=10)
+ax[0].set_xlim(xmin=0, xmax=periods)
+
+ax[1].plot(pis_evo_2[:, 18], color='r', label='Dividend', zorder=5)
+ax[1].plot(de_sim, color='r', label='Signal', zorder=0)
+ax[1].hlines(y=0, xmin=0, xmax=periods, color='black', linestyles='dashed', zorder=10)
+ax[1].set_ylabel(r'$\frac{dD}{D}$' + ' and ' + r'$de$', fontsize=10)
+ax[1].set_xlabel('t', fontsize=10)
+ax[1].set_title(r'$\frac{dD}{D}=\theta dt + \sigma_D dB_D$' + ' and ' + r'$de=\theta dt + \sigma_e dB_e$', fontsize=10)
+ax[1].legend(loc='upper left', fontsize=10)
+ax[1].set_xlim(xmin=0, xmax=periods)
+
+fig_7.tight_layout()
+fig_7.savefig('images/fig_7.png')
+
 
 
 
@@ -302,8 +416,6 @@ plt.show()
 
 
 
-# np.unique(drift)
-# np.ndim(drift) != 0 and np.size(drift, 0) == round(T/dt):
 
 
 
@@ -391,21 +503,19 @@ plt.show()
 
 
 
-# k = h_D ** 2 + h_e ** 2
-
 # Stochastic differential equation (6)
 
 # for t in range(int(T/dt)):
 
 #     dB_D = np.random.normal(0,1)
 #     dB_e = np.random.normal(0,1)
-#     m_theta = np.sum(pi[t,:] * thetas)
+#     m_theta_1 = np.sum(pi[t,:] * thetas)
 #     print(min(pi[t,:]), max(pi[t,:]), sum(pi[t,:]))
 
 #     for i in range(n):
 
-#         dlog_pi[t+1, i] = (p * (f[i] - pi[t, i]) / pi[t, i] + k * (thetas[i] - m_theta) * (theta_ell - m_theta)) * dt \
-#                           + (thetas[i] - m_theta) * (h_D * dB_D + h_e * dB_e) - 0.5 * (thetas[i] - m_theta) ** 2 * (h_D ** 2 + h_e ** 2) * dt
+#         dlog_pi[t+1, i] = (p * (f[i] - pi[t, i]) / pi[t, i] + k * (thetas[i] - m_theta_1) * (theta_ell - m_theta_1)) * dt \
+#                           + (thetas[i] - m_theta_1) * (h_D * dB_D + h_e * dB_e) - 0.5 * (thetas[i] - m_theta_1) ** 2 * (h_D ** 2 + h_e ** 2) * dt
 
 #         log_pi[t+1, i] = log_pi[t, i] + dlog_pi[t+1, i]
 
@@ -421,13 +531,13 @@ plt.show()
 
 #     dB_D = np.random.normal(0,1)
 #     dB_e = np.random.normal(0,1)
-#     m_theta = np.sum(pi[t,:] * thetas)
+#     m_theta_1 = np.sum(pi[t,:] * thetas)
 #     print(min(pi[t,:]), max(pi[t,:]), sum(pi[t,:]))
 
 #     for i in range(n):
 
-#         dpi[t+1,i] = (p * (f[i] - pi[t,i]) + k * pi[t,i] * (thetas[i] - m_theta) * (theta_ell - m_theta)) * dt \
-#                      + pi[t,i] * (thetas[i] - m_theta) * (h_D * dB_D + h_e * dB_e)
+#         dpi[t+1,i] = (p * (f[i] - pi[t,i]) + k * pi[t,i] * (thetas[i] - m_theta_1) * (theta_ell - m_theta_1)) * dt \
+#                      + pi[t,i] * (thetas[i] - m_theta_1) * (h_D * dB_D + h_e * dB_e)
 #         pi[t+1,i] = pi[t,i] + dpi[t+1,i]
 
 #     print(min(dpi[t + 1, :]), max(dpi[t + 1, :]), sum(dpi[t + 1, :]))
