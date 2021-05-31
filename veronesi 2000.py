@@ -87,7 +87,6 @@ p = 0.50
 # Drift
 
 thetas = np.linspace(-0.0045, 0.0065, 23)
-theta_ell = thetas[14]
 
 # Unconditional distribution
 
@@ -110,10 +109,8 @@ h_e = 1 / sigma_e
 
 fig_2, ax = plt.subplots(nrows=1, ncols=1, figsize=(5.5, 4))
 
-plt.bar(thetas, height=pis, width=0.0005, edgecolor='black', color='lightcyan', label='Prior')
-plt.bar(thetas, height=f1, width=0.0005, edgecolor='black', color='blue', alpha = 0.6, label='Unconditional')
-plt.vlines(theta_ell, ymin=0, ymax=max(f1), color='black', linestyles='dashed')
-plt.text(theta_ell+0.0001, 0.08, r'$\theta_\ell$')
+plt.bar(thetas, height=pis.reshape(-1), width=0.0005, edgecolor='black', color='lightcyan', label='Prior')
+plt.bar(thetas, height=f1.reshape(-1), width=0.0005, edgecolor='black', color='blue', alpha = 0.6, label='Unconditional')
 plt.xlabel(r'$\theta$', fontsize=10)
 plt.ylabel('Probability', fontsize=10)
 plt.legend(loc='upper left', fontsize=10)
@@ -211,24 +208,26 @@ for t in range(periods-1):
 
 # Plot the simulated evolution of beliefs
 
-ytick1 = [0.025, 0.02, 0.02, 0.03, 0.035, 0.049, 0.05, 0.05, 0.06, 0.065, 0.07, 0.07]
-ytick2 = [0.07, 0.075, 0.07, 0.06, 0.06, 0.055, 0.05, 0.04, 0.035, 0.02, 0.02]
-
 fig_4 = plt.figure(constrained_layout=True, figsize=(8, 8))
 
 gs = plt.GridSpec(12, 2, figure=fig_4)
 
-for row in range(12):
-    ax = fig_4.add_subplot(gs[row,0])
-    ax.plot(pis_evo[:, row], color='b', linewidth=0.6, label=r'$\pi_{}$'.format(row))
-    ax.tick_params(axis='both', labelsize='6')
-    plt.text(995, ytick1[row], '$\pi {}$'.format(row + 1), fontsize=6)
+col = 0
+row = 0
 
-for row in range(11):
-    ax = fig_4.add_subplot(gs[row,1])
-    ax.plot(pis_evo[:, 10 + row], color='b', linewidth=0.6, label=r'$\pi_{}$'.format(row))
+for i in range(23):
+
+    row = i
+
+    if row > 11:
+        col = 1
+        row -= 12
+
+    ax = fig_4.add_subplot(gs[row, col])
+    ax.plot(pis_evo[:, i], color='b', linewidth=0.6, zorder=5)
+    ax.hlines(y=f1[0, i], xmin=0, xmax=periods, color='r', linestyles='dashed', linewidth=0.6, zorder=10)
     ax.tick_params(axis='both', labelsize='6')
-    plt.text(995, ytick2[row], '$\pi {}$'.format(row + 13), fontsize=6)
+    plt.text(995, (np.max(pis_evo[:, i]) + np.min(pis_evo[:, i]))/2, '$\pi {}$'.format(i + 1), fontsize=6)
 
 fig_4.suptitle("Evolution of Investors' Beliefs", fontsize=10)
 
@@ -236,8 +235,43 @@ fig_4.savefig('images/fig_4.png')
 
 
 # -------------------------------------------------------------------------------
-# EVOLUTION OF INVESTORS BELIEFS
+# IMPACT OF SIGNAL PRECISION ON DISPERSION OF INVESTORS BELIEFS
 # -------------------------------------------------------------------------------
+
+# Known drift
+
+delta_theta_ell = int(periods/10)
+theta_ell = np.full(delta_theta_ell, thetas[10])
+
+for i in range(5):
+
+        theta_ell = np.append(theta_ell, np.full(delta_theta_ell, thetas[11 + i]))
+
+for i in range(4):
+    theta_ell = np.append(theta_ell, np.full(delta_theta_ell, thetas[3 + i * 3]))
+
+# Plot the evolution of the known drift
+
+# Plot utility function
+
+fig_5, ax = plt.subplots(nrows=1, ncols=1, figsize=(5.5, 4))
+
+ax.plot(theta_ell, color='b')
+ax.hlines(y=0, xmin=0, xmax=periods, color='black', linestyles='dashed')
+plt.text(4.4, 4.9, '$\gamma$=0.0')
+plt.text(4.4, 3.9, '$\gamma$=0.5')
+plt.text(4.4, 1.1, '$\gamma$=1.0')
+plt.text(4.4, -0.7, '$\gamma$=1.5')
+plt.text(4.4, -1.4, '$\gamma$=2.0')
+ax.set_ylabel('U(C)', fontsize=10)
+ax.set_xlabel('C', fontsize=10)
+ax.set_title('U(C) for varying $\gamma$',fontsize=10)
+ax.set_xlim(xmin=np.min(cons), xmax=np.max(cons))
+
+fig_1.tight_layout()
+fig_1.savefig('images/fig_1.png')
+
+
 
 
 # Risk aversion
