@@ -340,7 +340,7 @@ gammas_s1 = [1.0, 0.5, 0.15, 0.0]
 
 delta = 0.0033
 p = 0.0167
-sigma_D = 0.015 #  # sigma_D = 0.10
+sigma_D = 0.015
 
 # Function: constant K
 
@@ -392,6 +392,51 @@ ax[1].set_xlim(xmin=np.min(thetas), xmax=np.max(thetas))
 
 fig_t1.tight_layout()
 fig_t1.savefig('images/fig_t1.png')
+
+
+# -------------------------------------------------------------------------------
+# MU_R
+# -------------------------------------------------------------------------------
+
+
+# Generate thetas with varying standard deviation
+
+n = 50
+desired_sigma = np.arange(0.0001, 0.0012, 0.0001)
+thetas_2 = np.zeros((n, desired_sigma.shape[0]))
+pis_2 = np.ones((1, n)) / n
+
+for i in range(desired_sigma.shape[0]):
+
+    b = 0.0002 + 0.0002 * i
+    a = b - np.sqrt(12) * desired_sigma[i]
+    thetas_2[:,i] = [a + (b - a)/n * i for i in range(n-1)] + [b]
+
+thetas_2_std = np.std(thetas_2, axis=0)
+
+# Volatility of signal
+
+sigma_e = np.inf
+h_e = 1 / sigma_e
+
+# Risk aversion
+
+gammas_g1 = [2.0, 3.5, 5.0]
+gammas_s1 = [1.0, 0.5, 0.15, 0.0]
+
+def mthetastar(pis_):
+
+    m_theta_star_ = np.sum(pis_ * thetas)
+
+    return m_theta_
+
+
+# Function: expected excess return
+
+def mur(gamma_):
+
+    vtheta = np.sum() /
+    mur_r = gamma_ * (sigma_D ** 2 + vtheta)
 
 
 # -------------------------------------------------------------------------------
