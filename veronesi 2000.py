@@ -393,37 +393,6 @@ ax[1].set_xlim(xmin=np.min(thetas), xmax=np.max(thetas))
 fig_t1.tight_layout()
 fig_t1.savefig('images/fig_t1.png')
 
-#################### DELETE ###############################
-
-
-C_theta_g2 = pd.DataFrame(columns=[0.01, 0.04, 0.06, 0.08, 0.12])
-
-for sigma_D in [0.01, 0.04, 0.06, 0.08, 0.12]:
-
-    def kappa2(gamma_):
-        k = 0
-        for i in range(n):
-            k += f1[0, i] / (p + delta + (gamma_ - 1) * thetas[i] - 0.5 * gamma_ * (gamma_ - 1) * sigma_D ** 2)
-        return k
-
-
-    def Ctheta2(gamma_):
-        c = 1 / ((p + delta + (gamma_ - 1) * thetas - 0.5 * gamma_ * (gamma_ - 1) * sigma_D ** 2) * (1 - p * kappa2(gamma_)))
-        return c
-
-    C_theta_g2.loc[:, sigma_D] = Ctheta2(2.5)
-
-# Plot figure
-
-fig_t1, ax = plt.subplots(nrows=1, ncols=1, figsize=(11, 4))
-
-ax.plot(thetas, C_theta_g2, label=['sigma_D=0.01', 'sigma_D=0.04', 'sigma_D=0.06', 'sigma_D=0.08', 'sigma_D=0.12'])
-ax.legend(fontsize=8, loc='upper right')
-ax.set_ylabel('C($\Theta$)', fontsize=10)
-ax.set_xlabel('$\Theta$', fontsize=10)
-ax.set_title('C($\Theta$) for $\gamma > 1$',fontsize=10)
-ax.set_xlim(xmin=np.min(thetas), xmax=np.max(thetas))
-
 
 # -------------------------------------------------------------------------------
 # GENERAL
