@@ -401,12 +401,13 @@ fig_t1.savefig('images/fig_t1.png')
 
 # Generate thetas with varying standard deviation
 
-n = 50
 desired_sigma = np.arange(0.0001, 0.0012, 0.0001)
+n = 50
+n_sigmas = desired_sigma.shape[0]
 thetas_2 = np.zeros((n, desired_sigma.shape[0]))
 pis_2 = np.ones((1, n)) / n
 
-for i in range(desired_sigma.shape[0]):
+for i in range(n_sigmas):
 
     b = 0.0002 + 0.0002 * i
     a = b - np.sqrt(12) * desired_sigma[i]
@@ -424,11 +425,15 @@ h_e = 1 / sigma_e
 gammas_g1 = [2.0, 3.5, 5.0]
 gammas_s1 = [1.0, 0.5, 0.15, 0.0]
 
-def mthetastar(pis_):
+# V theta
 
-    m_theta_star_ = np.sum(pis_ * thetas)
+v_theta = np.zeros(n_sigmas)
 
-    return m_theta_
+for i in range(n_sigmas):
+
+    vtheta = np.sum(pis_2 * Ctheta(gamma_) (thetas_2 - m_theta)) / np.sum(pis_2 * C_i)
+
+V_theta np.zeros() =
 
 
 # Function: expected excess return
