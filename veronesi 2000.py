@@ -451,9 +451,9 @@ def mur(pis_, thetas_, f_, gamma_):
 
 # Simulate expected excess return
 
-mur_g1 = pd.DataFrame(columns=gammas_g1)
+mur_g1 = pd.DataFrame(columns=gammas_g2)
 
-for g_g1 in gammas_g1:
+for g_g1 in gammas_g2:
 
     for t_t2 in range(n_sigmas):
 
@@ -601,66 +601,3 @@ fig_t3.savefig('images/fig_t3.png')
 # Show plots
 
 plt.show()
-
-
-
-
-
-
-# fig3, ax = plt.subplots(nrows=1, ncols=1)
-
-# ax.plot(ip_sims, linewidth=0.5)
-# ax.hlines(y=100, xmin=0, xmax=ip.num_simuls, linewidth=0.5, color='black')
-# ax.set_title('Ito Process - $\mu$={:.1f}%, $\sigma$={:.1f}%'.format(ip.mu * ip.dt * 100, ip.sigma**2 * ip.dt * 100))
-# ax.set_xlabel('t')
-# ax.set_ylabel('$x_t$')
-# ax.set_xlim(left=0, right=ip.num_simuls)
-# fig3.tight_layout()
-
-
-
-
-# Stochastic differential equation (6)
-
-# for t in range(int(T/dt)):
-
-#     dB_D = np.random.normal(0,1)
-#     dB_e = np.random.normal(0,1)
-#     m_theta_1 = np.sum(pi[t,:] * thetas)
-#     print(min(pi[t,:]), max(pi[t,:]), sum(pi[t,:]))
-
-#     for i in range(n):
-
-#         dlog_pi[t+1, i] = (p * (f[i] - pi[t, i]) / pi[t, i] + k * (thetas[i] - m_theta_1) * (theta_ell - m_theta_1)) * dt \
-#                           + (thetas[i] - m_theta_1) * (h_D * dB_D + h_e * dB_e) - 0.5 * (thetas[i] - m_theta_1) ** 2 * (h_D ** 2 + h_e ** 2) * dt
-
-#         log_pi[t+1, i] = log_pi[t, i] + dlog_pi[t+1, i]
-
-#     pi[t + 1, :] = np.exp(log_pi[t+1, :])
-#     pi[t + 1, :] = pi[t + 1, :] / np.sum(pi[t + 1, :])
-
-#     print(min(dpi[t + 1, :]), max(dpi[t + 1, :]), sum(dpi[t + 1, :]))
-#     print(min(pi[t+1,:]), max(pi[t+1,:]), sum(pi[t+1,:]))
-
-
-
-# for t in range(int(T/dt)):
-
-#     dB_D = np.random.normal(0,1)
-#     dB_e = np.random.normal(0,1)
-#     m_theta_1 = np.sum(pi[t,:] * thetas)
-#     print(min(pi[t,:]), max(pi[t,:]), sum(pi[t,:]))
-
-#     for i in range(n):
-
-#         dpi[t+1,i] = (p * (f[i] - pi[t,i]) + k * pi[t,i] * (thetas[i] - m_theta_1) * (theta_ell - m_theta_1)) * dt \
-#                      + pi[t,i] * (thetas[i] - m_theta_1) * (h_D * dB_D + h_e * dB_e)
-#         pi[t+1,i] = pi[t,i] + dpi[t+1,i]
-
-#     print(min(dpi[t + 1, :]), max(dpi[t + 1, :]), sum(dpi[t + 1, :]))
-#     print(min(pi[t+1,:]), max(pi[t+1,:]), sum(pi[t+1,:]))
-
-
-
-
-
