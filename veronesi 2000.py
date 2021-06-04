@@ -181,9 +181,9 @@ fig_3.savefig('images/fig_3.png')
 
 # Function: expected drift rate
 
-def mtheta(pis_):
+def mtheta(pis_, thetas_):
 
-    m_theta_ = np.sum(pis_ * thetas)
+    m_theta_ = np.sum(pis_ * thetas_)
 
     return m_theta_
 
@@ -201,7 +201,7 @@ pis_evo_1[0,:] = pis
 
 for t in range(periods-1):
 
-    m_theta_1 = mtheta(pis_evo_1[t, :])
+    m_theta_1 = mtheta(pis_evo_1[t, :], thetas)
     dBD_tilde = h_D * (dDD_sim[t] - m_theta_1 * dt)
     dBe_tilde = h_e * (de_sim[t] - m_theta_1 * dt)
     dpis_evo_1[t,:] = p * (f1 - pis_evo_1[t,:]) * dt + pis_evo_1[t,:] * (thetas - m_theta_1) * (h_D * dBD_tilde + h_e * dBe_tilde)
@@ -292,7 +292,7 @@ pis_evo_2[0, :] = pis
 
 for t in range(periods-1):
 
-    m_theta_2 = mtheta(pis_evo_2[t, :])
+    m_theta_2 = mtheta(pis_evo_2[t, :], thetas)
     dBD = h_D * (dDD_sim_2[t] - theta_ell[t] * dt)
     dBe = h_e * (de_sim_2[t] - theta_ell[t] * dt)
     dpis_evo_2[t,:] = (p * (f1 - pis_evo_2[t,:]) + k * pis_evo_2[t,:] * (thetas - m_theta_2) * (theta_ell[t] - m_theta_2)) * dt + \
@@ -344,21 +344,21 @@ sigma_D = 0.015
 
 # Function: constant K
 
-def kappa(gamma_):
+def kappa(f_, gamma_, thetas_):
 
     k = 0
 
     for i in range(n):
 
-        k += f1[0,i] / (p + delta + (gamma_ - 1) * thetas[i] - 0.5 * gamma_ * (gamma_ - 1) * sigma_D ** 2)
+        k += f_[0,i] / (p + delta + (gamma_ - 1) * thetas_[i] - 0.5 * gamma_ * (gamma_ - 1) * sigma_D ** 2)
 
     return k
 
 # Function: C(theta)
 
-def Ctheta(gamma_):
+def Ctheta(f_, gamma_, thetas_):
 
-    c = 1 / ((p + delta + (gamma_ - 1) * thetas - 0.5 * gamma_ * (gamma_ - 1) * sigma_D ** 2) * (1 - p * kappa(gamma_)))
+    c = 1 / ((p + delta + (gamma_ - 1) * thetas_ - 0.5 * gamma_ * (gamma_ - 1) * sigma_D ** 2) * (1 - p * kappa(f_, gamma_, thetas_)))
 
     return c
 
@@ -369,8 +369,8 @@ C_theta_s1 = pd.DataFrame(columns=gammas_s1)
 
 for g_g1, g_s1 in zip(gammas_g1, gammas_s1):
 
-    C_theta_g1.loc[:, g_g1] = Ctheta(g_g1)
-    C_theta_s1.loc[:, g_s1] = Ctheta(g_s1)
+    C_theta_g1.loc[:, g_g1] = Ctheta(f1, g_g1, thetas)
+    C_theta_s1.loc[:, g_s1] = Ctheta(f1, g_s1, thetas)
 
 # Plot figure
 
@@ -406,6 +406,7 @@ n = 50
 n_sigmas = desired_sigma.shape[0]
 thetas_2 = np.zeros((n, desired_sigma.shape[0]))
 pis_2 = np.ones((1, n)) / n
+f3 = np.ones((1, n)) / n
 
 for i in range(n_sigmas):
 
@@ -422,26 +423,84 @@ h_e = 1 / sigma_e
 
 # Risk aversion
 
-gammas_g1 = [2.0, 3.5, 5.0]
-gammas_s1 = [1.0, 0.5, 0.15, 0.0]
+gammas_g2 = [2.0, 3.5, 5.0]
+gammas_2 = np.arange(0,5,0.005)
 
-# V theta
+# Function: vtheta
 
-v_theta = np.zeros(n_sigmas)
+def vtheta(pis_, thetas_, f_, gamma_):
 
-for i in range(n_sigmas):
+    pis_star = pis_ * Ctheta(f_, gamma_, thetas_) / np.sum(pis_ * Ctheta(f_, gamma_, thetas_))
+    vtheta_ = mtheta(pis_star, thetas_) - mtheta(pis_, thetas_)
 
-    vtheta = np.sum(pis_2 * Ctheta(gamma_) (thetas_2 - m_theta)) / np.sum(pis_2 * C_i)
-
-V_theta np.zeros() =
-
+    return vtheta_
 
 # Function: expected excess return
 
-def mur(gamma_):
+def mur(pis_, thetas_, f_, gamma_):
 
-    vtheta = np.sum() /
-    mur_r = gamma_ * (sigma_D ** 2 + vtheta)
+    mur_r = gamma_ * (sigma_D ** 2 + vtheta(pis_, thetas_, f_, gamma_))
+
+    return mur_r
+
+# Simulate expected excess return
+
+mur_g1 = pd.DataFrame(columns=gammas_g1)
+
+for g_g1 in gammas_g1:
+
+    for t_t2 in range(n_sigmas):
+
+        mur_g1.loc[t_t2, g_g1] = mur(pis_2, thetas_2[:,t_t2], f3, g_g1)
+
+
+mur_2 = np.array([mur(pis_2, thetas_2[:,-1], f3, g) for g in gammas_2])
+
+# Plot simulated expected excess return
+
+fig_t2, ax = plt.subplots(nrows=1, ncols=2, figsize=(11, 4))
+
+ax[0].plot(thetas_2_std, mur_g1, label=['$\gamma$=2', '$\gamma$=3.5', '$\gamma$=5'])
+ax[0].legend(fontsize=8, loc='upper right')
+ax[0].set_ylabel('$\mu_R$', fontsize=10)
+ax[0].set_xlabel(r'$\sigma_\theta$', fontsize=10)
+ax[0].hlines(y=0, xmin=np.min(thetas_2_std), xmax=np.max(thetas_2_std), color='black', linestyles='dashed')
+ax[0].set_title('$\mu_R$ for $\gamma > 1$',fontsize=10)
+ax[0].set_xlim(xmin=np.min(thetas_2_std), xmax=np.max(thetas_2_std))
+
+ax[1].plot(gammas_2, mur_2)
+ax[1].set_ylabel('$\mu_R$', fontsize=10)
+ax[1].set_xlabel('$\gamma$', fontsize=10)
+ax[1].hlines(y=0, xmin=np.min(gammas_2), xmax=np.max(gammas_2), color='black', linestyles='dashed')
+ax[1].set_title('$\mu_R$ for varying $\gamma$',fontsize=10)
+ax[1].set_xlim(xmin=np.min(gammas_2), xmax=np.max(gammas_2))
+
+fig_t2.tight_layout()
+fig_t2.savefig('images/fig_t2.png')
+
+# Simulate dividends, posterior and expected excess return
+
+divid_3 = ItoProcess(x0=1, mu=theta_ell, sigma=sigma_D, dt=dt, T=T, change=True, seed=987654321)
+D_sim_3, dD_sim_3 = divid_3.simulate()
+dDD_sim_3 = dD_sim_3 / D_sim_3
+dDD_sim_3 = dDD_sim_3[:-1]
+
+gammas_g1 = [1, 3, 4, 5]
+
+for g_g1 in gammas_g1:
+
+    for t_t2 in range(n_sigmas):
+
+        mur_g1.loc[t_t2, g_g1] = mur(pis_2, thetas_2[:,t_t2], f3, g_g1)
+
+
+def vtheta(pis_, thetas_, f_, gamma_):
+
+    pis_star = pis_ * Ctheta(f_, gamma_, thetas_) / np.sum(pis_ * Ctheta(f_, gamma_, thetas_))
+    vtheta_ = mtheta(pis_star, thetas_) - mtheta(pis_, thetas_)
+
+    return vtheta_
+
 
 
 # -------------------------------------------------------------------------------
