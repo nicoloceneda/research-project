@@ -492,7 +492,7 @@ fig_t2.savefig('images/fig_t2.png')
 
 # Dimensions
 
-n = 23
+n = 29
 dt = 1
 T = 1000
 periods = int(T/dt)
@@ -507,7 +507,7 @@ thetas = np.linspace(-0.0045, 0.0065, n)
 
 # Unconditional distribution
 
-freq = [1, 2, 4, 7, 11, 17, 23, 25, 27, 29, 30, 33, 30, 29, 27, 25, 23, 17, 11, 7, 4, 2, 1]
+freq = [1, 2, 4, 7, 11, 17, 23, 25, 27, 29, 30, 33, 37, 42, 49, 42, 37, 33, 30, 29, 27, 25, 23, 17, 11, 7, 4, 2, 1]
 f1 = np.reshape(freq / np.sum(freq), newshape=(1,-1))
 
 # Prior probability distribution
@@ -520,7 +520,7 @@ gammas = [1, 3, 4, 5]
 
 # Precision
 
-sigma_D = 0.015
+sigma_D = 0.025
 sigma_e = np.inf
 h_D = 1 / sigma_D
 h_e = 1 / sigma_e
@@ -532,7 +532,7 @@ drift = drift_sim(thetas, f1, p)
 
 # Risky asset
 
-divid = ItoProcess(x0=1, mu=drift, sigma=sigma_D, dt=dt, T=T, change=True, seed=987654321)
+divid = ItoProcess(x0=1, mu=drift, sigma=sigma_D, dt=dt, T=T, change=True, seed=1234)
 D_sim, dD_sim = divid.simulate()
 
 dDD_sim = dD_sim / D_sim
@@ -574,21 +574,23 @@ for g in gammas:
 
 # Plot simulated expected excess return
 
+lag1 = 50
+lag2 = 10
+
 fig_t3, ax = plt.subplots(nrows=1, ncols=2, figsize=(11, 4))
 
-ax[0].plot(range(periods - 10), mu_r.iloc[10:,:], label=['$\gamma$=1', '$\gamma$=3', '$\gamma$=4', '$\gamma$=5'])
-ax[0].legend(fontsize=8, loc='upper left')
+ax[0].plot(range(periods - lag1 - lag2), mu_r.iloc[lag1:-lag2,:], label=['$\gamma$=1', '$\gamma$=3', '$\gamma$=4', '$\gamma$=5'])
+ax[0].legend(fontsize=8, loc='center right')
 ax[0].set_ylabel('$\mu_R$', fontsize=10)
 ax[0].set_xlabel('t', fontsize=10)
-ax[0].set_title('$\mu_R$ over Time$',fontsize=10)
-ax[0].set_xlim(xmin=0, xmax=990)
+ax[0].set_title('$\mu_R$ over Time',fontsize=10)
+ax[0].set_xlim(xmin=0, xmax=periods-lag1-lag2)
 
-ax[1].plot(range(periods - 10), theta_std[10:])
+ax[1].plot(range(periods - lag1 - lag2), theta_std[lag1:-lag2])
 ax[1].set_ylabel(r'$\sigma_\theta$', fontsize=10)
 ax[1].set_xlabel('t', fontsize=10)
-ax[1].hlines(y=0, xmin=np.min(gammas_2), xmax=np.max(gammas_2), color='black', linestyles='dashed')
 ax[1].set_title(r'$\sigma_\theta$ over time',fontsize=10)
-ax[1].set_xlim(xmin=0, xmax=990)
+ax[1].set_xlim(xmin=0, xmax=periods-lag1-lag2)
 
 fig_t3.tight_layout()
 fig_t3.savefig('images/fig_t3.png')
