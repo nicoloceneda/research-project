@@ -86,7 +86,7 @@ p = 0.50
 
 # Drift
 
-thetas = np.linspace(-0.0045, 0.0065, 23)
+thetas = np.linspace(-0.0045, 0.0065, n)
 
 # Unconditional distribution
 
@@ -122,17 +122,23 @@ fig_2.savefig('images/fig_2.png')
 
 # Stochastic drift
 
-drift = np.random.choice(a=thetas, size=1, p=f1.reshape(-1))
+def drift_sim(thetas_, f_, p_):
 
-for t in range(periods-1):
+    drift_ = np.random.choice(a=thetas_, size=1, p=f_.reshape(-1))
 
-    if np.random.uniform(low=0.0, high=1.0) < p * dt:
+    for t in range(periods-1):
 
-        drift = np.append(drift, np.random.choice(a=thetas, size=1, p=f1.reshape(-1)))
+        if np.random.uniform(low=0.0, high=1.0) < p_ * dt:
 
-    else:
+            drift_ = np.append(drift_, np.random.choice(a=thetas_, size=1, p=f_.reshape(-1)))
 
-        drift = np.append(drift, drift[-1])
+        else:
+
+            drift_ = np.append(drift_, drift_[-1])
+
+    return drift_
+
+drift = drift_sim(thetas, f1, p)
 
 # Risky asset
 
@@ -336,7 +342,7 @@ fig_6.savefig('images/fig_6.png')
 gammas_g1 = [1.0, 1.5, 2.0, 2.5]
 gammas_s1 = [1.0, 0.5, 0.15, 0.0]
 
-# Discount rate
+# Parameters
 
 delta = 0.0033
 p = 0.0167
@@ -395,7 +401,7 @@ fig_t1.savefig('images/fig_t1.png')
 
 
 # -------------------------------------------------------------------------------
-# MU_R
+# MU_R (1)
 # -------------------------------------------------------------------------------
 
 
@@ -414,7 +420,7 @@ for i in range(n_sigmas):
     a = b - np.sqrt(12) * desired_sigma[i]
     thetas_2[:,i] = [a + (b - a)/n * i for i in range(n-1)] + [b]
 
-thetas_2_std = np.std(thetas_2, axis=0)
+thetas_2_std = np.std(thetas_2, axis=0) # TODO: wrong way to compute std
 
 # Volatility of signal
 
@@ -478,30 +484,114 @@ ax[1].set_xlim(xmin=np.min(gammas_2), xmax=np.max(gammas_2))
 fig_t2.tight_layout()
 fig_t2.savefig('images/fig_t2.png')
 
-# Simulate dividends, posterior and expected excess return
 
-divid_3 = ItoProcess(x0=1, mu=theta_ell, sigma=sigma_D, dt=dt, T=T, change=True, seed=987654321)
-D_sim_3, dD_sim_3 = divid_3.simulate()
-dDD_sim_3 = dD_sim_3 / D_sim_3
-dDD_sim_3 = dDD_sim_3[:-1]
-
-gammas_g1 = [1, 3, 4, 5]
-
-for g_g1 in gammas_g1:
-
-    for t_t2 in range(n_sigmas):
-
-        mur_g1.loc[t_t2, g_g1] = mur(pis_2, thetas_2[:,t_t2], f3, g_g1)
+# -------------------------------------------------------------------------------
+# MU_R (2)
+# -------------------------------------------------------------------------------
 
 
-def vtheta(pis_, thetas_, f_, gamma_):
+# Dimensions
 
-    pis_star = pis_ * Ctheta(f_, gamma_, thetas_) / np.sum(pis_ * Ctheta(f_, gamma_, thetas_))
-    vtheta_ = mtheta(pis_star, thetas_) - mtheta(pis_, thetas_)
+n = 23
+dt = 1
+T = 1000
+periods = int(T/dt)
 
-    return vtheta_
+# Probability of a change
 
+p = 0.0167
 
+# Drift
+
+thetas = np.linspace(-0.0045, 0.0065, n)
+
+# Unconditional distribution
+
+freq = [1, 2, 4, 7, 11, 17, 23, 25, 27, 29, 30, 33, 30, 29, 27, 25, 23, 17, 11, 7, 4, 2, 1]
+f1 = np.reshape(freq / np.sum(freq), newshape=(1,-1))
+
+# Prior probability distribution
+
+pis = np.full((1, n), 1) / n
+
+# Risk aversion
+
+gammas = [1, 3, 4, 5]
+
+# Precision
+
+sigma_D = 0.015
+sigma_e = np.inf
+h_D = 1 / sigma_D
+h_e = 1 / sigma_e
+k = h_D ** 2 + h_e ** 2
+
+# Drift
+
+drift = drift_sim(thetas, f1, p)
+
+# Risky asset
+
+divid = ItoProcess(x0=1, mu=drift, sigma=sigma_D, dt=dt, T=T, change=True, seed=987654321)
+D_sim, dD_sim = divid.simulate()
+
+dDD_sim = dD_sim / D_sim
+dDD_sim = dDD_sim[:-1]
+
+# Theta standard deviation
+
+def thetastd(pis_, thetas_):
+
+    thetas_std_ = np.sqrt(np.sum(pis_ * (thetas_ - mtheta(pis_, thetas_)) ** 2))
+
+    return thetas_std_
+
+# Simulated the evolution of beliefs
+
+dpis_evo = np.zeros(shape=(periods, n))
+pis_evo = np.zeros(shape=(periods, n))
+pis_evo[0,:] = pis
+theta_std = np.zeros(shape=periods)
+
+for t in range(periods-1):
+
+    m_theta = mtheta(pis_evo[t, :], thetas)
+    dBD_tilde = h_D * (dDD_sim[t] - m_theta * dt)
+    dBe_tilde = h_e
+    dpis_evo[t,:] = p * (f1 - pis_evo[t,:]) * dt + pis_evo[t,:] * (thetas - m_theta) * (h_D * dBD_tilde + h_e * dBe_tilde)
+    pis_evo[t+1,:] = pis_evo[t,:] + dpis_evo[t,:]
+    theta_std[t] = thetastd(pis_evo[t,:], thetas)
+
+# Expected excess return
+
+mu_r = pd.DataFrame(columns=gammas)
+
+for g in gammas:
+
+    for t in range(periods):
+
+        mu_r.loc[t, g] = mur(pis_evo[t, :], thetas, f1, g)
+
+# Plot simulated expected excess return
+
+fig_t3, ax = plt.subplots(nrows=1, ncols=2, figsize=(11, 4))
+
+ax[0].plot(range(periods - 10), mu_r.iloc[10:,:], label=['$\gamma$=1', '$\gamma$=3', '$\gamma$=4', '$\gamma$=5'])
+ax[0].legend(fontsize=8, loc='upper left')
+ax[0].set_ylabel('$\mu_R$', fontsize=10)
+ax[0].set_xlabel('t', fontsize=10)
+ax[0].set_title('$\mu_R$ over Time$',fontsize=10)
+ax[0].set_xlim(xmin=0, xmax=990)
+
+ax[1].plot(range(periods - 10), theta_std[10:])
+ax[1].set_ylabel(r'$\sigma_\theta$', fontsize=10)
+ax[1].set_xlabel('t', fontsize=10)
+ax[1].hlines(y=0, xmin=np.min(gammas_2), xmax=np.max(gammas_2), color='black', linestyles='dashed')
+ax[1].set_title(r'$\sigma_\theta$ over time',fontsize=10)
+ax[1].set_xlim(xmin=0, xmax=990)
+
+fig_t3.tight_layout()
+fig_t3.savefig('images/fig_t3.png')
 
 # -------------------------------------------------------------------------------
 # GENERAL
