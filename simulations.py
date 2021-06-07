@@ -48,7 +48,7 @@ fig1.tight_layout()
 
 # Simulate generalized brownian motions
 
-gbm = GeneralizedBrownianMotion(x0=0, mu=0.2, sigma=1.0, dt=0.1, T=100, seed=0)
+gbm = GeneralizedBrownianMotion(x0=0, mu=0.5, sigma=1.0, dt=0.1, T=100, seed=0)
 
 gbm_sims = []
 
