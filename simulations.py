@@ -101,3 +101,47 @@ fig3.tight_layout()
 plt.show()
 
 
+dt = 1
+
+sigma_D = 0.5
+r = 0.5
+D = [100]
+
+x_bar = 75
+sigma_x = 0.5
+x = [100]
+
+for t in range(50):
+
+    dx = (x_bar - x[-1]) * dt + sigma_x * np.random.normal(0,1) * np.sqrt(dt)
+    x.append(x[-1] + dx)
+
+    dD = r * (x[-1] - D[-1]) * dt + sigma_D * np.random.normal(0,1) * np.sqrt(dt)
+    D.append(D[-1] + dD)
+
+plt.plot(x, label='x')
+plt.plot(D, label='D')
+plt.hlines(x_bar, 0, 49, linestyles='dashed', colors='black', label='x_bar')
+plt.legend(fontsize=8, loc='center right')
+
+
+sigma_D = 1
+r = 0.5
+D = [100]
+
+mu = 0.5
+x_bar = 75
+sigma_x = 0.5
+x = [100]
+
+for t in range(50):
+
+    dx = mu * dt # + sigma_x * np.random.normal(0,1) * np.sqrt(dt)
+    x.append(x[-1] + dx)
+
+    dD = r * (x[-1] - D[-1]) * dt + sigma_D * np.random.normal(0,1) * np.sqrt(dt)
+    D.append(D[-1] + dD)
+
+plt.plot(x, label='x')
+plt.plot(D, label='D')
+plt.legend(fontsize=8, loc='center right')
