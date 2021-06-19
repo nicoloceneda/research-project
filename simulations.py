@@ -124,30 +124,3 @@ plt.plot(D, label='D')
 plt.hlines(x_bar, 0, 49, linestyles='dashed', colors='black', label='x_bar')
 plt.legend(fontsize=8, loc='center right')
 
-
-dt = 1
-
-sigma_D = 2
-r = 1
-D = [100]
-
-theta_bar = 0.5
-sigma_D_bar = 0.5
-D_bar = [100]
-
-trend = [100]
-
-np.random.seed(123)
-
-for t in range(50):
-
-    dD_bar = theta_bar * dt + sigma_D_bar * np.random.normal(0,1) * np.sqrt(dt)
-    D_bar.append(D_bar[-1] + dD_bar)
-
-    # dD = r * (D_bar[-1] - D[-1]) * dt + sigma_D * np.random.normal(0,1) * np.sqrt(dt)
-    dD = - r * (D[-1] - D_bar[-1]) * dt + sigma_D * np.random.normal(0, 1) * np.sqrt(dt)
-    D.append(D[-1] + dD)
-
-plt.plot(D_bar, label='D_bar')
-plt.plot(D, label='D')
-plt.legend(fontsize=8, loc='center right')
