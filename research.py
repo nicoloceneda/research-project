@@ -14,11 +14,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-
-
-# Import custom programs
-
-from stochastic_processes import *
+from scipy.integrate import odeint
 
 
 # -------------------------------------------------------------------------------
@@ -107,29 +103,123 @@ fig_2.savefig('images/fig_2.png')
 
 
 # -------------------------------------------------------------------------------
+# ORDINARY DIFFERENTIAL EQUATIONS
+# -------------------------------------------------------------------------------
+
+# Parameters
+
+theta2 = 0.0025
+theta1 = - 0.0150
+sigmaD = 0.0240
+r = 0.0041
+delta = 1
+p12 = 0.1000
+p21 = 0.0167
+
+pi2 = p12 / (p12 + p21)
+
+Gamma_D = 1 / r
+Gamma_pi = (theta2 - theta1) / (r * (r + p12 + p21))
+Gamma_1 = theta1 / r**2 + (theta2 - theta1) * p12 / (r**2 * (r + p12 + p21))
+
+def q_parameters(pi_, gamma_):
+
+    h = (theta2 - theta1) / sigmaD * pi_ * (1 - pi_)
+
+    Q3 = h**2 / 2
+    Q1 = gamma_ * sigmaD * h + r * gamma_ * Gamma_pi * h**2 - (p12 + p21) * (pi2 - pi_)
+    Q0 = (gamma_ * r)**2 / 2 * Gamma_pi**2 * h**2 + gamma**2 * r * Gamma_pi * sigmaD * h + r * np.log(delta)
+
+    return Q3, Q1, Q0
+
+# System of ODEs
+
+def model(y, pi, gamma):
+
+    y1 = y[0]
+    y2 = y[1]
+    Q3, Q1, Q0 = q_parameters(pi, gamma)
+
+    dy1 = y2
+    dy2 = y2**2 + y2 * Q1 / Q3 + y1 * r / Q3 + Q0 / Q3
+
+    return dy1, dy2
+
+
+# Initial condition
+
+y0 = [0.1, 0.1]
+
+# Time points
+
+pi = np.linspace(0.001, 0.999, 999)
+
+# Solve ODE
+
+gamma = 1
+x = odeint(model, y0, pi, args=(gamma,))
+
+y1 = x[:, 0]
+y2 = x[:, 1]
+
+
+# Plot
+
+plt.plot(pi, y1)
+plt.show()
+
+
+# ---------------
+# First order ODE
+# ---------------
+
+def model(y, t, k):
+
+    dydt = -k * y
+
+    return dydt
+
+y0 = 5
+t = np.linspace(0,20)
+k = 0.3
+
+y = odeint(model, y0, t, args=(k,))
+
+plt.plot(t,y)
+plt.xlabel('Time')
+plt.ylabel('y(t)')
+plt.show()
+
+#
+
+
+
+# -------------------------------------------------------------------------------
 # PHASE DIAGRAM
 # -------------------------------------------------------------------------------
 
 
 # Gamma = 1 / psi
 
-def Qparams(theta2_, theta1_, p12_, p21_, pi_, sigmaD_, gamma_, rate_, delta_=1):
+def parameters(theta2_, theta1_, p12_, p21_, pi_, sigmaD_, gamma_, psi_, rate_, delta_):
 
     h_ = (theta2_ - theta1_) / sigmaD_ * pi_ * (1 - pi_)
     pi2_ = p12_ / (p12_ + p21_)
     Gamma_pi_ = (theta2_ - theta1_) / (rate_ * (rate_ + p12_ + p21_))
+    S_pi_ = 
     
     Q3_ = h_ ** 2 / 2
-    Q2_ = h_ * sigmaD_ * gamma_ - (p12_ + p21_) * (pi2_ - pi_) + gamma_ * rate_ * Gamma_pi_ * h_ ** 2
-    Q1_ = (rate_ * gamma_) ** 2 / 2 * Gamma_pi_ ** 2 * h_ ** 2 + rate_ * gamma_ ** 2 * sigmaD_ * Gamma_pi_ * h_ + rate_ * np.log(delta_)
+    Q2_ = gamma_ * psi_ * h_ ** 2 / 2
+    Q1_ = gamma_ * sigmaD_ * h_ + rate_ * gamma_ * Gamma_pi_ * h_ ** 2 - (p12_ + p21_) * (pi2_ - pi_) - gamma_ ** 2 * psi_ * rate_ * S_pi_ * h_ ** 2 + gamma_ * rate_ * S_pi_ * h_ ** 2
+    Q0_ = (rate_ * gamma_) ** 2 / 2 * Gamma_pi_ ** 2 * h_ ** 2 + rate_ * gamma_ ** 2 * sigmaD_ * Gamma_pi_ * h_ + rate_ * np.log(delta_)
 
     return Q3_, Q2_, Q1_
 
-def parabola(y2_, Q3_, Q2_, Q1_, rate_):
+def parabola(x2_, Q2_, Q1_, Q0_, rate_):
 
-    y1_locus_ = - y2_ ** 2 * Q3_ / rate_ - y2_ * Q2_ / rate_ - Q1_ / rate_
+    x2_locus_ = - x2_ ** 2 * Q2_ / rate_ - x2_ * Q1_ / rate_ - Q0_ / rate_
 
-    return y1_locus_
+    return x2_locus_
 
 # Parameters
 
@@ -312,11 +402,5 @@ ax[1].set_xlim(xmin=np.min(rates), xmax=np.max(rates))
 fig_2.tight_layout()
 fig_2.savefig('images/fig_2.png')
 
-
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm
-from matplotlib.ticker import LinearLocator, FormatStrFormatter
-import matplotlib.pyplot as plt
-import numpy as np
 
 
